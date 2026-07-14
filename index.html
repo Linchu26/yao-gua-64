@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>问卦 · 六十四爻卦</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rice-paper: #F5F0E8;
+      --rice-paper-deep: #EDE6D8;
+      --rice-paper-light: #FAF7F2;
+      --ink-black: #2D2D2D;
+      --ink-mid: #5C5C5C;
+      --ink-light: #8A8A8A;
+      --vermillion: #C41E3A;
+      --vermillion-dark: #A01830;
+      --vermillion-glow: rgba(196,30,58,0.35);
+      --gold-accent: #D4A574;
+      --gold-light: rgba(212,165,116,0.25);
+      --gold-faint: rgba(212,165,116,0.08);
+      --gold-bright: #E8C088;
+      --gold-glow: rgba(212,165,116,0.4);
+      --font-display: 'Noto Serif SC','STSong','SimSun','宋体',serif;
+      --font-body: 'Noto Serif SC','STSong','SimSun','宋体',serif;
+      --font-ui: -apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+      --space-xs: 4px; --space-sm: 8px; --space-md: 16px;
+      --space-lg: 24px; --space-xl: 32px; --space-2xl: 48px; --space-3xl: 72px;
+      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 24px;
+      --max-w: 880px;
+      --header-h: 56px;
+    }
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html { font-size:16px; -webkit-font-smoothing:antialiased; scroll-behavior:smooth; overscroll-behavior-y:none; }
+    body {
+      font-family: var(--font-body);
+      background: var(--rice-paper);
+      color: var(--ink-black);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.7;
+      overscroll-behavior-y: none;
+    }
+
+    /* ===== Ink transition overlay ===== */
+    .ink-transition {
+      position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+      background: radial-gradient(circle at 50% 50%, var(--ink-black) 0%, rgba(45,45,45,0.95) 100%);
+      opacity: 0; transition: opacity 0.4s ease;
+    }
+    .ink-transition.active { opacity: 1; }
+
+    /* ===== Header ===== */
+    .web-header {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+      background: rgba(245,240,232,0.88); backdrop-filter: blur(20px) saturate(1.8);
+      -webkit-backdrop-filter: blur(20px) saturate(1.8);
+      border-bottom: 1px solid rgba(212,165,116,0.15);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 var(--space-xl); z-index: 1000;
+      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+    }
+    .web-header.hidden { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+    .header-brand {
+      font-family: var(--font-display); font-size: 1.05rem; font-weight: 700;
+      color: var(--ink-black); letter-spacing: 0.08em; cursor: pointer; user-select: none;
+      transition: opacity 0.2s; white-space: nowrap;
+    }
+    .header-brand:hover { opacity: 0.7; }
+    .header-brand .dot { color: var(--gold-accent); margin: 0 2px; }
+    .header-nav { display: flex; align-items: center; gap: var(--space-lg); }
+    .nav-link {
+      font-family: var(--font-ui); font-size: 0.88rem; color: var(--ink-light);
+      cursor: pointer; border: none; background: none; padding: var(--space-sm) 0;
+      transition: color 0.2s; letter-spacing: 0.03em; position: relative;
+    }
+    .nav-link:hover { color: var(--ink-black); }
+    .nav-link.active { color: var(--ink-black); font-weight: 500; }
+    .nav-link.active::after {
+      content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 2px; background: var(--vermillion); border-radius: 1px;
+      animation: navSlideIn 0.3s ease-out;
+    }
+    @keyframes navSlideIn { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+
+    /* ===== Page Watermark ===== */
+    .page-watermark {
+      position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+      font-family: var(--font-ui); font-size: 0.7rem; color: var(--ink-light);
+      opacity: 0.32; letter-spacing: 0.04em; white-space: nowrap;
+      pointer-events: none; z-index: 5; user-select: none;
+    }
+
+    /* ===== View System ===== */
+    #app { position: relative; width: 100%; min-height: 100vh; }
+    .view { display: none; min-height: 100vh; position: relative; z-index: 1; }
+    .view.active { display: flex; flex-direction: column; }
+
+    /* ===== LANDING VIEW ===== */
+    #landing-view {
+      align-items: center; justify-content: center;
+      min-height: 100vh; overflow: hidden;
+      background: linear-gradient(180deg, #F0EBE1 0%, var(--rice-paper-deep) 50%, #E8E0D0 100%);
+    }
+    #landing-canvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      z-index: 1; pointer-events: none;
+    }
+    .landing-bg {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
+      background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDYwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0Y1RjBFOCIgc3RvcC1vcGFjaXR5PSIwIi8+PHN0b3Agb2Zmc2V0PSI0MCUiIHN0b3AtY29sb3I9IiNFOEUwRDAiIHN0b3Atb3BhY2l0eT0iMC4yIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMkQyRDJEIiBzdG9wLW9wYWNpdHk9IjAuMzUiLz48L2xpbmVhckdyYWRpZW50PjxmaWx0ZXIgaWQ9ImIiPjxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjIiLz48L2ZpbHRlcj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEyMDAiIGhlaWdodD0iNjAwIiBmaWxsPSJ1cmwoI2cpIi8+PHBhdGggZD0iTTAsNTIwIEMxODAsNDcwIDMyMCw1NDAgNDgwLDQ5MCBTNzgwLDQzMCAxMjAwLDUyMCBMMTIwMCw2MDAgTDAsNjAwIFoiIGZpbGw9IiMyRDJEMkQiIG9wYWNpdHk9IjAuMjIiIGZpbHRlcj0idXJsKCNiKSIvPjxwYXRoIGQ9Ik0wLDU0MCBDMjAwLDUwMCA0MjAsNTYwIDY0MCw1MTAgUzk1MCw0NzAgMTIwMCw1NDAgTDEyMDAsNjAwIEwwLDYwMCBaIiBmaWxsPSIjMkQyRDJEIiBvcGFjaXR5PSIwLjE1IiBmaWx0ZXI9InVybCgjYikiLz48Y2lyY2xlIGN4PSI5MDAiIGN5PSIxODAiIHI9IjgwIiBmaWxsPSIjMkQyRDJEIiBvcGFjaXR5PSIwLjA2IiBmaWx0ZXI9InVybCgjYikiLz48L3N2Zz4=');
+      background-size: cover; background-position: center bottom;
+      opacity: 0.18; z-index: 2;
+      mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+    }
+    .landing-glow {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-55%);
+      width: 600px; height: 600px; border-radius: 50%; z-index: 3;
+      background: radial-gradient(circle, rgba(212,165,116,0.12) 0%, rgba(212,165,116,0.04) 40%, transparent 70%);
+      animation: glowPulse 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes glowPulse {
+      0%,100% { opacity: 0.7; transform: translate(-50%,-55%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%,-55%) scale(1.08); }
+    }
+    .light-rays {
+      position: absolute; top: 42%; left: 50%; transform: translate(-50%,-50%);
+      width: 400px; height: 400px; z-index: 2; pointer-events: none;
+      opacity: 0.04;
+    }
+    .light-rays::before, .light-rays::after {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      width: 2px; height: 100%;
+      background: linear-gradient(to bottom, transparent 0%, var(--gold-accent) 30%, var(--gold-accent) 70%, transparent 100%);
+      transform-origin: center center;
+    }
+    .light-rays::before { transform: translate(-50%,-50%) rotate(25deg); }
+    .light-rays::after { transform: translate(-50%,-50%) rotate(-25deg); }
+
+    /* Animated Bagua Ring */
+    .bagua-ring-container {
+      position: absolute; z-index: 3; pointer-events: none;
+      width: 520px; height: 520px;
+      opacity: 0.07;
+    }
+    .bagua-ring {
+      width: 100%; height: 100%; position: relative;
+      animation: baguaSpin 60s linear infinite;
+    }
+    .bagua-char {
+      position: absolute; font-size: 2.8rem; color: var(--ink-black);
+      font-family: var(--font-display);
+      transform-origin: center;
+    }
+    .bagua-ring-inner {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 200px; height: 200px; border-radius: 50%;
+      border: 1.5px solid var(--ink-black); opacity: 0.3;
+    }
+    .bagua-ring-outer {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 380px; height: 380px; border-radius: 50%;
+      border: 1px solid var(--ink-black); opacity: 0.15;
+    }
+    @keyframes baguaSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    .bagua-ring-slow {
+      position: absolute; inset: -60px;
+      animation: baguaSpin 120s linear infinite reverse;
+      opacity: 0.5;
+    }
+    .bagua-ring-slow .bagua-char { font-size: 1.8rem; opacity: 0.6; }
+
+    .landing-content {
+      position: relative; z-index: 10; text-align: center;
+      padding: var(--space-3xl) var(--space-xl); display: flex; flex-direction: column;
+      align-items: center; gap: var(--space-lg); max-width: 640px;
+    }
+    .trigram-ring {
+      display: flex; gap: var(--space-lg); margin: var(--space-md) 0;
+      opacity: 0.15; font-size: 2.2rem; color: var(--ink-mid);
+      font-family: var(--font-display);
+      animation: trigramFade 3s ease-in-out infinite;
+    }
+    @keyframes trigramFade {
+      0%,100% { opacity: 0.1; }
+      50% { opacity: 0.2; }
+    }
+    .main-title {
+      font-family: var(--font-display); font-size: 3.4rem; font-weight: 900;
+      color: var(--ink-black); letter-spacing: 0.15em; line-height: 1.4;
+      position: relative; white-space: nowrap;
+    }
+    .main-title .dot { color: var(--gold-accent); margin: 0 0.15em; }
+    .main-title::after {
+      content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+      width: 120px; height: 2px;
+      background: linear-gradient(to right, transparent, var(--gold-accent), transparent);
+      opacity: 0.5;
+    }
+    .subtitle {
+      font-family: var(--font-body); font-size: 1.15rem; color: var(--ink-light);
+      opacity: 0.85; letter-spacing: 0.12em; line-height: 1.8;
+    }
+    .trigram-deco {
+      position: absolute; font-size: 2.5rem; color: var(--ink-black); opacity: 0.03;
+      font-family: var(--font-display); pointer-events: none; user-select: none;
+      animation: floatDeco 8s ease-in-out infinite;
+    }
+    .trigram-deco:nth-child(odd) { animation-duration: 10s; }
+    .trigram-deco:nth-child(3n) { animation-duration: 12s; animation-delay: -3s; }
+    @keyframes floatDeco {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      33% { transform: translateY(-8px) rotate(2deg); }
+      66% { transform: translateY(5px) rotate(-1deg); }
+    }
+    .ornament-line {
+      width: 80px; height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-accent), transparent);
+      opacity: 0.5; margin: var(--space-sm) auto;
+    }
+
+    /* ===== Buttons ===== */
+    .cta-btn {
+      width: 220px; height: 52px; border-radius: 26px;
+      background: linear-gradient(135deg, var(--vermillion) 0%, var(--vermillion-dark) 100%);
+      color: #fff;
+      font-family: var(--font-ui); font-size: 1.05rem; font-weight: 600;
+      border: none; cursor: pointer; position: relative;
+      box-shadow: 0 4px 20px var(--vermillion-glow);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      letter-spacing: 0.12em;
+      overflow: hidden;
+    }
+    .cta-btn::before {
+      content: ''; position: absolute; inset: 0; border-radius: 26px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .cta-btn:hover::before { opacity: 1; }
+    .cta-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 36px var(--vermillion-glow), 0 0 60px rgba(196,30,58,0.15);
+    }
+    .cta-btn:active { transform: translateY(0); }
+    .cta-btn:disabled { opacity: 0.5; pointer-events: none; }
+    .cta-btn::after {
+      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+      background: linear-gradient(
+        45deg, transparent 40%, rgba(255,255,255,0.15) 45%,
+        rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.15) 55%, transparent 60%
+      );
+      animation: btnShimmer 3s ease-in-out infinite;
+    }
+    @keyframes btnShimmer {
+      0% { transform: translateX(-100%) rotate(0deg); }
+      100% { transform: translateX(100%) rotate(0deg); }
+    }
+
+    .btn-secondary {
+      height: 46px; padding: 0 28px; border-radius: 23px;
+      background: transparent; color: var(--ink-black);
+      font-family: var(--font-ui); font-size: 0.92rem; font-weight: 500;
+      border: 1.5px solid rgba(138,138,138,0.35); cursor: pointer;
+      transition: all 0.25s ease; letter-spacing: 0.05em;
+    }
+    .btn-secondary:hover {
+      border-color: var(--gold-accent); background: rgba(212,165,116,0.06);
+      box-shadow: 0 2px 16px rgba(212,165,116,0.15);
+    }
+    .text-link {
+      font-family: var(--font-ui); font-size: 0.88rem; color: var(--ink-light);
+      cursor: pointer; border: none; background: none;
+      transition: color 0.2s; letter-spacing: 0.03em;
+    }
+    .text-link:hover { color: var(--gold-accent); }
+
+    /* ===== CONTEMPLATE VIEW ===== */
+    #contemplate-view {
+      align-items: center; justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--rice-paper-light) 0%, var(--rice-paper) 100%);
+      overflow: hidden;
+      padding-top: var(--header-h);
+    }
+    #contemplate-canvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      z-index: 1; pointer-events: none;
+    }
+    .contemplate-content {
+      position: relative; z-index: 5;
+      text-align: center; padding: var(--space-3xl) var(--space-xl);
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-xl);
+    }
+    .flame-container {
+      position: relative; width: 60px; height: 100px; margin-bottom: var(--space-md);
+    }
+    .flame {
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+      width: 30px; height: 60px;
+      background: linear-gradient(to top, #E8A838 0%, #E85838 40%, rgba(200,60,40,0.3) 80%, transparent 100%);
+      border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+      animation: flameSway 3s ease-in-out infinite;
+      filter: blur(0.5px);
+    }
+    .flame::before {
+      content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 18px; height: 40px;
+      background: linear-gradient(to top, #FFD700 0%, #FFA500 50%, transparent 100%);
+      border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+      animation: flameSway 2.5s ease-in-out infinite reverse;
+    }
+    .flame-glow {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 120px; height: 120px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(232,168,56,0.2) 0%, rgba(232,88,56,0.08) 40%, transparent 70%);
+      animation: glowPulse 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .flame-base {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 44px; height: 10px; background: var(--gold-accent);
+      border-radius: 50%; opacity: 0.5;
+      box-shadow: 0 0 16px rgba(212,165,116,0.3);
+    }
+    .ripple-ring {
+      position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
+      border-radius: 50%; border: 1px solid rgba(212,165,116,0.15);
+      animation: rippleExpand 3s ease-out infinite;
+      pointer-events: none;
+    }
+    .ripple-ring:nth-child(2) { animation-delay: 1s; }
+    .ripple-ring:nth-child(3) { animation-delay: 2s; }
+    @keyframes rippleExpand {
+      0% { width: 20px; height: 20px; opacity: 0.4; margin-left: -10px; }
+      100% { width: 200px; height: 60px; opacity: 0; margin-left: -100px; }
+    }
+    @keyframes flameSway {
+      0%,100% { transform: translateX(-50%) rotate(-2deg) scaleY(1); }
+      25% { transform: translateX(-50%) rotate(1.5deg) scaleY(1.03); }
+      50% { transform: translateX(-50%) rotate(2deg) scaleY(0.97); }
+      75% { transform: translateX(-50%) rotate(-1deg) scaleY(1.02); }
+    }
+    .contemplate-text {
+      font-family: var(--font-display); font-size: 1.45rem; line-height: 2.2;
+      color: var(--ink-black); letter-spacing: 0.1em;
+    }
+    .breathing-dots { display: flex; gap: var(--space-sm); margin: var(--space-md) 0; }
+    .breathing-dots span {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold-accent), var(--vermillion));
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .breathing-dots span:nth-child(2) { animation-delay: 0.3s; }
+    .breathing-dots span:nth-child(3) { animation-delay: 0.6s; }
+    @keyframes pulse {
+      0%,100% { opacity: 0.25; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    /* ===== DRAWING ANIMATION VIEW ===== */
+    #drawing-view {
+      align-items: center; justify-content: center; min-height: 100vh;
+      background: var(--rice-paper);
+      overflow: hidden;
+      padding-top: var(--header-h);
+    }
+    #drawing-canvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      z-index: 1; pointer-events: none;
+    }
+    .drawing-bg-glow {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 500px; height: 500px; border-radius: 50%; z-index: 1;
+      background: radial-gradient(circle, rgba(212,165,116,0.08) 0%, transparent 60%);
+      animation: glowPulse 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .card-container {
+      width: 320px; max-width: 80vw; aspect-ratio: 3/4.5;
+      perspective: 1200px; opacity: 0; z-index: 5; position: relative;
+    }
+    .card-container.appear { animation: cardAppear 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    @keyframes cardAppear {
+      from{opacity:0;transform:scale(0.7) rotateX(10deg)}
+      to{opacity:1;transform:scale(1) rotateX(0)}
+    }
+    .card-inner {
+      position: relative; width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+    .card-inner.flipped { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute; width: 100%; height: 100%;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      border-radius: var(--radius-md);
+      box-shadow: 0 16px 56px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.1),
+                 0 0 80px rgba(212,165,116,0.08);
+      overflow: hidden;
+    }
+    .card-back {
+      background: linear-gradient(145deg, #1a1a1a 0%, var(--ink-black) 30%, #2a2a2a 60%, #1a1a1a 100%);
+      display: flex; align-items: center; justify-content: center; position: relative;
+    }
+    .card-back::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(
+        135deg, transparent 30%, rgba(212,165,116,0.06) 45%,
+        rgba(212,165,116,0.12) 50%, rgba(212,165,116,0.06) 55%, transparent 70%
+      );
+      background-size: 200% 200%;
+      animation: goldShimmer 4s ease-in-out infinite;
+    }
+    @keyframes goldShimmer {
+      0% { background-position: 200% 200%; }
+      100% { background-position: -200% -200%; }
+    }
+    .card-back-border {
+      position: absolute; top: 14px; left: 14px; right: 14px; bottom: 14px;
+      border: 1px solid rgba(212,165,116,0.3); border-radius: 6px;
+      box-shadow: inset 0 0 20px rgba(212,165,116,0.05);
+    }
+    .card-back-pattern {
+      position: absolute; inset: 0;
+      background-image: url('ink-abstract.svg');
+      background-size: cover; background-position: center;
+      opacity: 0.12; mix-blend-mode: screen;
+    }
+    .card-back .corner-deco {
+      position: absolute; width: 28px; height: 28px;
+      border-color: rgba(212,165,116,0.4); border-style: solid; border-width: 0;
+    }
+    .card-back .corner-deco.tl { top: 20px; left: 20px; border-top-width: 1.5px; border-left-width: 1.5px; }
+    .card-back .corner-deco.tr { top: 20px; right: 20px; border-top-width: 1.5px; border-right-width: 1.5px; }
+    .card-back .corner-deco.bl { bottom: 20px; left: 20px; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+    .card-back .corner-deco.br { bottom: 20px; right: 20px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+    .taiji-wrapper {
+      position: relative; z-index: 2;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .taiji-glow {
+      position: absolute; width: 140px; height: 140px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,165,116,0.25) 0%, rgba(212,165,116,0.08) 40%, transparent 70%);
+      animation: glowPulse 3s ease-in-out infinite;
+    }
+    .taiji {
+      width: 88px; height: 88px; border-radius: 50%; position: relative;
+      background: linear-gradient(to right, var(--rice-paper) 50%, var(--ink-black) 50%);
+      animation: spin 20s linear infinite; z-index: 2;
+      box-shadow: 0 0 30px rgba(212,165,116,0.25), 0 0 60px rgba(212,165,116,0.1);
+    }
+    .taiji::before,.taiji::after {
+      content: ''; position: absolute; width: 44px; height: 44px; border-radius: 50%;
+    }
+    .taiji::before {
+      top: 0; left: 50%; transform: translateX(-50%);
+      background: radial-gradient(circle at 50% 50%, var(--ink-black) 25%, var(--rice-paper) 25%);
+    }
+    .taiji::after {
+      bottom: 0; left: 50%; transform: translateX(-50%);
+      background: radial-gradient(circle at 50% 50%, var(--rice-paper) 25%, var(--ink-black) 25%);
+    }
+    .taiji-orbit {
+      position: absolute; width: 160px; height: 160px; border-radius: 50%;
+      animation: baguaSpin 30s linear infinite;
+    }
+    .taiji-orbit-char {
+      position: absolute; font-size: 1rem; color: rgba(212,165,116,0.5);
+      font-family: var(--font-display);
+    }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+    .card-front {
+      transform: rotateY(180deg);
+      background: linear-gradient(180deg, var(--rice-paper-light) 0%, var(--rice-paper) 100%);
+      display: flex; flex-direction: column; align-items: center;
+      padding: var(--space-xl) var(--space-lg);
+      position: relative;
+    }
+    .card-front-border {
+      position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
+      border: 1px solid var(--gold-light); border-radius: 8px; pointer-events: none;
+      box-shadow: inset 0 0 30px rgba(212,165,116,0.04);
+    }
+    .card-front-symbol {
+      font-size: 4rem; color: var(--ink-black); line-height: 1;
+      margin-bottom: var(--space-sm);
+      text-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 0 40px rgba(212,165,116,0.1);
+    }
+    .card-front-name {
+      font-family: var(--font-display); font-size: 1.6rem; font-weight: 700;
+      color: var(--ink-black); letter-spacing: 0.12em;
+    }
+    .card-front-fullname {
+      font-family: var(--font-body); font-size: 0.9rem; color: var(--ink-light);
+      margin-top: var(--space-xs); letter-spacing: 0.06em;
+    }
+    .card-front-text {
+      font-family: var(--font-display); font-size: 0.95rem; color: var(--ink-mid);
+      padding: 0 var(--space-md); line-height: 1.9; margin-top: var(--space-md);
+    }
+
+    /* ===== RESULT VIEW ===== */
+    #result-view {
+      padding-top: var(--header-h);
+      background: linear-gradient(180deg, var(--rice-paper-light) 0%, var(--rice-paper) 50%, var(--rice-paper-deep) 100%);
+      position: relative;
+    }
+    #result-canvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      z-index: 0; pointer-events: none; opacity: 0.5;
+    }
+    .result-wrapper {
+      max-width: var(--max-w); width: 100%; margin: 0 auto;
+      padding: var(--space-2xl) var(--space-xl) var(--space-3xl);
+      flex: 1; position: relative; z-index: 2;
+    }
+    .result-header {
+      text-align: center; margin-bottom: var(--space-2xl);
+      padding-top: var(--space-md);
+      position: relative;
+    }
+    .result-header::before {
+      content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-60%);
+      width: 180px; height: 180px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,165,116,0.1) 0%, transparent 60%);
+      pointer-events: none; z-index: -1;
+    }
+    .result-symbol {
+      font-size: 5rem; color: var(--ink-black); line-height: 1;
+      margin-bottom: var(--space-md); display: block;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 0 40px rgba(212,165,116,0.1);
+      position: relative;
+      animation: symbolReveal 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+    }
+    @keyframes symbolReveal {
+      from { opacity: 0; transform: scale(0.5) translateY(20px); filter: blur(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+    }
+    .result-name {
+      font-family: var(--font-display); font-size: 2rem; font-weight: 700;
+      color: var(--ink-black); letter-spacing: 0.15em;
+    }
+    .result-fullname {
+      font-family: var(--font-body); font-size: 1.05rem; color: var(--ink-light);
+      margin-top: var(--space-xs); letter-spacing: 0.08em;
+    }
+
+    /* Yao Diagram */
+    .yao-diagram {
+      display: flex; flex-direction: column-reverse; align-items: center;
+      gap: 10px; margin: var(--space-xl) auto; width: fit-content;
+      padding: var(--space-lg) var(--space-2xl);
+      background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.3) 100%);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(212,165,116,0.15);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8);
+      backdrop-filter: blur(8px);
+      position: relative;
+    }
+    .yao-diagram::before {
+      content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 120%; height: 120%; border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,165,116,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .yao-line { height: 6px; display: flex; justify-content: center; gap: 14px; }
+    .yao-line.yang span {
+      display: block; width: 80px; height: 6px;
+      background: linear-gradient(to right, var(--ink-black), #3a3a3a, var(--ink-black));
+      border-radius: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .yao-line.yin span {
+      display: block; width: 32px; height: 6px;
+      background: linear-gradient(to right, var(--ink-black), #3a3a3a);
+      border-radius: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+
+    /* Section Divider */
+    .section-divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: var(--space-md); margin: var(--space-2xl) 0 var(--space-lg);
+      color: var(--gold-accent); font-family: var(--font-display);
+      font-size: 1.15rem; letter-spacing: 0.25em; font-weight: 600;
+      position: relative;
+    }
+    .section-divider::before,.section-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-light), var(--gold-accent), var(--gold-light), transparent);
+    }
+    .section-divider .deco-diamond {
+      width: 6px; height: 6px; background: var(--gold-accent);
+      transform: rotate(45deg); flex-shrink: 0; opacity: 0.6;
+    }
+
+    /* Hex Text Section */
+    .hex-text-section {
+      background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.3) 100%);
+      border-radius: var(--radius-md); padding: var(--space-lg) var(--space-xl);
+      margin-bottom: var(--space-lg);
+      border: 1px solid rgba(212,165,116,0.15);
+      max-width: 680px; margin-left: auto; margin-right: auto;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.03);
+      backdrop-filter: blur(4px);
+      position: relative;
+    }
+    .hex-text-section::before {
+      content: '☰'; position: absolute; top: 12px; right: 16px;
+      font-size: 1.5rem; color: var(--ink-black); opacity: 0.04;
+      font-family: var(--font-display);
+    }
+    .hex-original {
+      font-family: var(--font-display); font-size: 1.2rem; line-height: 1.9;
+      color: var(--ink-black); text-align: center; margin-bottom: var(--space-sm);
+      letter-spacing: 0.08em; font-weight: 600;
+    }
+    .hex-translation {
+      font-family: var(--font-body); font-size: 0.95rem; line-height: 1.9;
+      color: var(--ink-mid); text-align: center;
+    }
+
+    /* Interpretation Section */
+    .interpretation-section {
+      background: linear-gradient(135deg, rgba(196,30,58,0.02) 0%, rgba(212,165,116,0.06) 100%);
+      border-radius: var(--radius-md); padding: var(--space-xl) var(--space-xl);
+      margin-bottom: var(--space-lg);
+      border-left: 3px solid var(--vermillion);
+      max-width: 680px; margin-left: auto; margin-right: auto;
+      box-shadow: 0 2px 20px rgba(196,30,58,0.04), inset 0 0 30px rgba(212,165,116,0.03);
+      position: relative;
+    }
+    .interpretation-section::before {
+      content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
+      background: linear-gradient(to bottom, var(--vermillion), var(--gold-accent));
+      border-radius: 0 2px 2px 0;
+    }
+    .interpretation-section p {
+      font-family: var(--font-body); font-size: 1.1rem; line-height: 2.1;
+      color: var(--ink-mid);
+      margin-bottom: var(--space-md);
+    }
+    .interpretation-section p:last-child { margin-bottom: 0; }
+    .interpretation-section strong { color: var(--vermillion); font-weight: 600; font-size: 1.05rem; }
+
+    /* Fortune badge */
+    .fortune-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 4px 14px; border-radius: 999px;
+      font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.05em; margin-top: var(--space-xs);
+      border: 1px solid transparent; box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+    }
+    .fortune-badge::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      margin-right: 6px; background: currentColor; opacity: 0.7;
+    }
+    .fortune-best { background: rgba(196, 30, 58, 0.14); color: #9a1b2e; border-color: rgba(196, 30, 58, 0.45); }
+    .fortune-good { background: rgba(196, 30, 58, 0.09); color: #b73a4a; border-color: rgba(196, 30, 58, 0.28); }
+    .fortune-fair { background: rgba(196, 30, 58, 0.05); color: #c45a68; border-color: rgba(196, 30, 58, 0.18); }
+    .fortune-neutral { background: rgba(138, 138, 138, 0.12); color: #5c5c5c; border-color: rgba(138, 138, 138, 0.35); }
+    .fortune-poor { background: rgba(91, 140, 90, 0.08); color: #4a7a49; border-color: rgba(91, 140, 90, 0.25); }
+    .fortune-worst { background: rgba(91, 140, 90, 0.14); color: #2f5a2e; border-color: rgba(91, 140, 90, 0.45); }
+
+    /* Result Actions */
+    .result-actions {
+      display: flex; gap: var(--space-md); justify-content: center;
+      padding: var(--space-xl) var(--space-md) var(--space-2xl);
+      flex-shrink: 0;
+    }
+
+    /* ===== History View ===== */
+    #history-view {
+      padding-top: var(--header-h);
+      background: var(--rice-paper-light);
+    }
+    .history-wrapper {
+      max-width: var(--max-w); width: 100%; margin: 0 auto;
+      padding: var(--space-xl) var(--space-xl) var(--space-3xl);
+      flex: 1;
+    }
+    .history-header {
+      text-align: center; padding: var(--space-lg) 0 var(--space-xl);
+    }
+    .history-title {
+      font-family: var(--font-display); font-size: 1.5rem; font-weight: 700;
+      color: var(--ink-black); letter-spacing: 0.15em;
+    }
+    .history-list { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .history-card {
+      display: flex; align-items: center; padding: var(--space-lg) var(--space-xl);
+      background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(212,165,116,0.1);
+      border-left: 3px solid transparent;
+      cursor: pointer; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); gap: var(--space-lg);
+      backdrop-filter: blur(4px);
+    }
+    .history-card:hover {
+      background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.5) 100%);
+      box-shadow: 0 6px 28px rgba(0,0,0,0.06), 0 0 0 1px rgba(212,165,116,0.15);
+      transform: translateY(-2px);
+      border-left-color: var(--gold-accent);
+    }
+    .history-card-symbol {
+      font-size: 2.2rem; color: var(--ink-black); flex-shrink: 0;
+      width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(212,165,116,0.1) 0%, rgba(212,165,116,0.04) 100%);
+      border-radius: 50%;
+      border: 1px solid rgba(212,165,116,0.12);
+    }
+    .history-card-info { flex: 1; min-width: 0; }
+    .history-card-name {
+      font-family: var(--font-display); font-size: 1rem; font-weight: 600;
+      color: var(--ink-black);
+    }
+    .history-card-text {
+      font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-mid);
+      margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .history-card-date {
+      font-family: var(--font-ui); font-size: 0.8rem; color: var(--ink-light);
+      flex-shrink: 0;
+    }
+    .history-empty {
+      text-align: center; padding: var(--space-3xl);
+      color: var(--ink-light); font-family: var(--font-body); font-size: 0.95rem;
+    }
+    .history-empty-icon { font-size: 3.5rem; opacity: 0.12; margin-bottom: var(--space-md); display: block; }
+    .clear-history-btn {
+      display: block; margin: var(--space-xl) auto var(--space-2xl);
+      background: none; border: none;
+      font-family: var(--font-ui); font-size: 0.85rem; color: var(--vermillion);
+      cursor: pointer; opacity: 0.7; transition: opacity 0.2s;
+      padding: var(--space-sm) var(--space-md);
+    }
+    .clear-history-btn:hover { opacity: 1; }
+
+    /* ===== Fade Transitions ===== */
+    .fade-in { animation: fadeIn 0.5s ease-out; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .fade-out { animation: fadeOut 0.3s ease-out forwards; }
+    @keyframes fadeOut { from{opacity:1} to{opacity:0} }
+
+    /* ===== Result Entrance Animations ===== */
+    .result-wrapper .result-header { animation: resultSlideUp 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.1s both; }
+    .result-wrapper .yao-diagram { animation: resultSlideUp 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.25s both; }
+    .result-wrapper .section-divider:nth-of-type(1) { animation: resultSlideUp 0.5s ease-out 0.35s both; }
+    .result-wrapper .hex-text-section { animation: resultSlideUp 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.4s both; }
+    .result-wrapper .section-divider:nth-of-type(2) { animation: resultSlideUp 0.5s ease-out 0.5s both; }
+    .result-wrapper .interpretation-section { animation: resultSlideUp 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.55s both; }
+    .result-wrapper .result-actions { animation: resultSlideUp 0.6s ease-out 0.65s both; }
+    @keyframes resultSlideUp {
+      from { opacity: 0; transform: translateY(30px); filter: blur(4px); }
+      to { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+
+    /* ===== Responsive ===== */
+    @media(max-width:640px) {
+      :root { --header-h: 48px; --space-3xl: 48px; }
+      .main-title { font-size: 2.2rem; }
+      .subtitle { font-size: 1rem; }
+      .trigram-ring { font-size: 1.6rem; gap: var(--space-md); }
+      .cta-btn { width: 190px; height: 48px; font-size: 0.95rem; }
+      .result-symbol { font-size: 3.5rem; }
+      .result-name { font-size: 1.5rem; }
+      .result-wrapper { padding: var(--space-lg) var(--space-md) var(--space-2xl); }
+      .hex-text-section { padding: var(--space-md); }
+      .section-divider { font-size: 1rem; }
+      .interpretation-section { padding: var(--space-md); }
+      .interpretation-section p { font-size: 1rem; }
+      .interpretation-section strong { font-size: 0.98rem; }
+      .history-card { padding: var(--space-md); gap: var(--space-md); }
+      .history-card-symbol { width: 44px; height: 44px; font-size: 1.6rem; }
+      .web-header { padding: 0 var(--space-md); }
+      .card-container { width: 260px; }
+      .taiji { width: 72px; height: 72px; }
+      .taiji::before,.taiji::after { width: 36px; height: 36px; }
+      .bagua-ring-container { width: 340px; height: 340px; }
+    }
+    @media(min-width:1200px) {
+      .main-title { font-size: 3.8rem; }
+      .result-symbol { font-size: 5.5rem; }
+      .result-name { font-size: 2.2rem; }
+      .bagua-ring-container { width: 640px; height: 640px; }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(138,138,138,0.3); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="ink-transition" id="inkTransition"></div>
+
+<header class="web-header hidden" id="webHeader">
+  <div class="header-brand" id="headerBrand">
+    问卦<span class="dot">·</span>六十四爻卦
+  </div>
+  <nav class="header-nav">
+    <button class="nav-link active" id="navHome">首页</button>
+    <button class="nav-link" id="navHistory">历史记录</button>
+  </nav>
+</header>
+
+<main id="app">
+  <!-- Landing View -->
+  <div id="landing-view" class="view active">
+    <canvas id="landing-canvas"></canvas>
+    <div class="landing-bg"></div>
+    <div class="landing-glow"></div>
+    <div class="light-rays"></div>
+
+    <div class="bagua-ring-container" id="baguaRing">
+      <div class="bagua-ring" id="baguaRingInner">
+        <div class="bagua-ring-outer"></div>
+        <div class="bagua-ring-inner"></div>
+      </div>
+      <div class="bagua-ring-slow" id="baguaRingSlow"></div>
+    </div>
+
+    <span class="trigram-deco" style="top:8%;left:12%">☰</span>
+    <span class="trigram-deco" style="top:15%;right:18%">☷</span>
+    <span class="trigram-deco" style="top:35%;left:8%">☳</span>
+    <span class="trigram-deco" style="top:28%;right:10%">☴</span>
+    <span class="trigram-deco" style="bottom:35%;left:15%">☵</span>
+    <span class="trigram-deco" style="bottom:28%;right:14%">☶</span>
+    <span class="trigram-deco" style="bottom:18%;left:22%">☱</span>
+    <span class="trigram-deco" style="bottom:12%;right:22%">☲</span>
+
+    <div class="landing-content" id="landingContent">
+      <div class="trigram-ring">
+        <span>☰</span><span>☱</span><span>☲</span><span>☳</span><span>☴</span><span>☵</span><span>☶</span><span>☷</span>
+      </div>
+      <h1 class="main-title">问卦<span class="dot">·</span>六十四爻卦</h1>
+      <div class="ornament-line"></div>
+      <p class="subtitle">心中有所惑，卦中有明灯</p>
+      <button class="cta-btn" id="btn-start">开始问卦</button>
+      <button class="text-link" id="link-history-landing">查看历史记录 ▸</button>
+    </div>
+  </div>
+
+  <!-- Contemplate View -->
+  <div id="contemplate-view" class="view">
+    <canvas id="contemplate-canvas"></canvas>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;z-index:5">
+      <div class="contemplate-content">
+        <div class="flame-container">
+          <div class="flame-glow"></div>
+          <div class="ripple-ring"></div>
+          <div class="ripple-ring"></div>
+          <div class="ripple-ring"></div>
+          <div class="flame"></div>
+          <div class="flame-base"></div>
+        </div>
+        <div class="contemplate-text">
+          请闭目凝神<br>在心中默念你的困惑
+        </div>
+        <div class="breathing-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <div style="height:var(--space-xl)"></div>
+        <button class="cta-btn" id="btn-draw">我已想好，请抽卦</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawing View -->
+  <div id="drawing-view" class="view">
+    <canvas id="drawing-canvas"></canvas>
+    <div class="drawing-bg-glow"></div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;z-index:5">
+      <div class="card-container" id="card-container">
+        <div class="card-inner" id="card-inner">
+          <div class="card-face card-back">
+            <div class="card-back-pattern"></div>
+            <div class="card-back-border"></div>
+            <span class="corner-deco tl"></span>
+            <span class="corner-deco tr"></span>
+            <span class="corner-deco bl"></span>
+            <span class="corner-deco br"></span>
+            <div class="taiji-wrapper">
+              <div class="taiji-glow"></div>
+              <div class="taiji-orbit" id="taiji-orbit"></div>
+              <div class="taiji"></div>
+            </div>
+          </div>
+          <div class="card-face card-front" id="card-front">
+            <div class="card-front-border"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result View -->
+  <div id="result-view" class="view">
+    <canvas id="result-canvas"></canvas>
+    <div class="result-wrapper">
+      <div class="result-header">
+        <span class="result-symbol" id="result-symbol"></span>
+        <div class="result-name" id="result-name"></div>
+        <div class="result-fullname" id="result-fullname"></div>
+        <div class="fortune-badge" id="result-fortune"></div>
+      </div>
+      <div class="yao-diagram" id="yao-diagram"></div>
+      <div class="section-divider"><span class="deco-diamond"></span> 卦 辞 <span class="deco-diamond"></span></div>
+      <div class="hex-text-section">
+        <div class="hex-original" id="result-hexagram-text"></div>
+        <div class="hex-translation" id="result-translation"></div>
+      </div>
+      <div class="section-divider"><span class="deco-diamond"></span> 问卦解读 <span class="deco-diamond"></span></div>
+      <div class="interpretation-section">
+        <div class="interpretation" id="result-interpretation"></div>
+      </div>
+      <div class="result-actions">
+        <button class="cta-btn" id="btn-again" style="width:160px">再问一卦</button>
+        <button class="btn-secondary" id="btn-history-result">查看历史</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History View -->
+  <div id="history-view" class="view">
+    <div class="history-wrapper">
+      <div class="history-header">
+        <h2 class="history-title">问卦记录</h2>
+        <div class="ornament-line"></div>
+      </div>
+      <div class="history-list" id="history-list"></div>
+      <div class="history-empty" id="history-empty" style="display:none">
+        <span class="history-empty-icon">☰</span>
+        尚无问卦记录<br><span style="font-size:0.8rem;opacity:0.6">开始你的第一次问卦吧</span>
+      </div>
+      <button class="clear-history-btn" id="btn-clear-history" style="display:none">清除所有记录</button>
+    </div>
+  </div>
+</main>
+
+<div class="page-watermark">Linchu 2026年07月14日</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const HEXAGRAMS = [
+      {
+        id: 1,
+        name: "乾",
+        fullName: "乾为天",
+        symbol: "䷀",
+        upperTrigram: "乾",
+        lowerTrigram: "乾",
+        lines: [1, 1, 1, 1, 1, 1],
+        hexagramText: "元亨利贞。",
+        translation: "至为通达，利于坚守正道。乾卦象征天，刚健有力，万物之首。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>你正处在一个能量充沛、机遇明显的阶段，如同正午阳光、飞龙在天。手头拥有足够的资源与能力去推进目标，周围也更容易认可你的主导地位。</p><p><strong>行动建议：</strong>主动承担起关键责任，抓住眼前的机会推进重要计划。适合争取领导角色、启动核心项目或做出方向性决策，拿出果断与魄力。</p><p><strong>注意事项：</strong>切忌骄傲自满、刚愎自用。越是顺境越要谨言慎行，避免过度扩张或忽视他人感受，防止因冒进而埋下隐患。</p>",
+      },
+      {
+        id: 2,
+        name: "坤",
+        fullName: "坤为地",
+        symbol: "䷁",
+        upperTrigram: "坤",
+        lowerTrigram: "坤",
+        lines: [0, 0, 0, 0, 0, 0],
+        hexagramText: "元亨，利牝马之贞。君子有攸往，先迷后得主，利。西南得朋，东北丧朋。安贞吉。",
+        translation: "至为通达，利于像母马一样柔顺坚守正道。君子有所前往，先迷失方向后找到主导者则有利。安于正道则吉祥。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>当下大环境更适合以柔顺、包容的姿态应对，锋芒毕露反而容易受挫。你周围的稳定力量正在发挥作用，踏实、配合、愿意承载的人会受到青睐。</p><p><strong>行动建议：</strong>放下争先之心，选择跟随可靠的方向或有经验的前辈，稳扎稳打地积累。以承载和协助的角色赢得信任，用耐心换取长远空间。</p><p><strong>注意事项：</strong>柔顺不等于没有主见，更不等于任人摆布。要在坚守底线的前提下灵活配合，避免因过度退让而失去核心利益。</p>",
+      },
+      {
+        id: 3,
+        name: "屯",
+        fullName: "水雷屯",
+        symbol: "䷂",
+        upperTrigram: "坎",
+        lowerTrigram: "震",
+        lines: [1, 0, 0, 0, 1, 0],
+        hexagramText: "元亨利贞，勿用有攸往，利建侯。",
+        translation: "至为通达，利于坚守正道。不宜有所前往，利于建立基业。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>你正处于事物初创的艰难阶段，像是种子刚破土、雷雨未发。阻滞、不确定和资源不足都是常态，不必因此怀疑自己的能力。</p><p><strong>行动建议：</strong>优先夯实基础、聚拢资源、寻找可靠盟友。建立核心团队或支持网络比单打独斗更重要，先把根基扎稳再谈扩张。</p><p><strong>注意事项：</strong>不要急于求成，也不要被初期挫折吓退。避免在没有准备的情况下贸然投入大量资源，稳扎稳打才能渡过开局之难。</p>",
+      },
+      {
+        id: 4,
+        name: "蒙",
+        fullName: "山水蒙",
+        symbol: "䷃",
+        upperTrigram: "艮",
+        lowerTrigram: "坎",
+        lines: [0, 1, 0, 0, 0, 1],
+        hexagramText: "亨。匪我求童蒙，童蒙求我。初筮告，再三渎，渎则不告。利贞。",
+        translation: "通达。不是我去求蒙昧之人，而是蒙昧之人来求我。第一次占卜会告知，反复追问是亵渎。利于坚守正道。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>你对某些领域仍然缺乏清晰认识，处在需要学习和启蒙的阶段。承认无知并不是弱点，而是打开成长空间的起点。</p><p><strong>行动建议：</strong>主动寻找值得信赖的老师或前辈，带着诚意去请教。确定方向后沉下心系统学习，避免浅尝辄止、频繁更换主题。</p><p><strong>注意事项：</strong>不要被表面信息或碎片化知识迷惑，也不要因为急躁而反复质疑。诚心专注是获得真正指导的前提。</p>",
+      },
+      {
+        id: 5,
+        name: "需",
+        fullName: "水天需",
+        symbol: "䷄",
+        upperTrigram: "坎",
+        lowerTrigram: "乾",
+        lines: [1, 1, 1, 0, 1, 0],
+        hexagramText: "有孚，光亨，贞吉。利涉大川。",
+        translation: "心怀诚信，光明通达，坚守正道则吉。利于涉越大河。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>时机尚未完全成熟，你就像等待云聚成雨、河水退落。此刻的停滞并非坏事，而是大势未到之前的自然缓冲。</p><p><strong>行动建议：</strong>利用等待期充实自己、巩固基础、调整心态。保持诚信与耐心，机会一旦出现，你才有能力稳稳接住。</p><p><strong>注意事项：</strong>切忌急躁冒进或因为等待而自暴自弃。不要在条件不具备时强行推进，也不要忽视身心健康。</p>",
+      },
+      {
+        id: 6,
+        name: "讼",
+        fullName: "天水讼",
+        symbol: "䷅",
+        upperTrigram: "乾",
+        lowerTrigram: "坎",
+        lines: [0, 1, 0, 1, 1, 1],
+        hexagramText: "有孚窒惕，中吉，终凶。利见大人，不利涉大川。",
+        translation: "诚信受阻而警惕，中途停止则吉，争到底则凶。利于拜见贵人，不利涉越大河。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>你可能正面临分歧、争执或利益冲突，双方立场明显不同，气氛紧张。硬碰硬只会让矛盾升级，最终两败俱伤。</p><p><strong>行动建议：</strong>尽量通过沟通、调解化解矛盾，必要时引入公正的第三方。如果必须争取，也要见好就收、适可而止，保留回旋余地。</p><p><strong>注意事项：</strong>不要把争执拖到底，也不要为了争一口气而输掉大局。避免情绪化对抗和意气用事。</p>",
+      },
+      {
+        id: 7,
+        name: "师",
+        fullName: "地水师",
+        symbol: "䷆",
+        upperTrigram: "坤",
+        lowerTrigram: "坎",
+        lines: [0, 1, 0, 0, 0, 0],
+        hexagramText: "贞，丈人吉，无咎。",
+        translation: "坚守正道，由德高望重的人统领则吉，没有灾祸。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>当前需要组织、纪律和统一指挥。团队或项目中的无序与混乱是最大的威胁，明确领导核心才能凝聚力量。</p><p><strong>行动建议：</strong>尊重有经验、有威望的领导者，服从统一调度。如果你是负责人，要以身作则、赏罚分明，建立清晰规则和流程。</p><p><strong>注意事项：</strong>用人要慎重，避免任人唯亲或让能力不足者担当重任。纪律涣散会直接影响整体战斗力。</p>",
+      },
+      {
+        id: 8,
+        name: "比",
+        fullName: "水地比",
+        symbol: "䷇",
+        upperTrigram: "坎",
+        lowerTrigram: "坤",
+        lines: [0, 0, 0, 0, 1, 0],
+        hexagramText: "吉。原筮，元永贞，无咎。不宁方来，后夫凶。",
+        translation: "吉祥。从一开始就坚守正道。不安的各方会来归附，迟到者有凶险。",
+        fortune: "上中卦",
+        interpretation: "<p><strong>当前处境：</strong>这是建立联盟、寻求支持的有利时机。周围有人愿意与你同行，关键在于你是否主动伸出橄榄枝、尽早表态。</p><p><strong>行动建议：</strong>积极寻找志同道合的伙伴，果断行动、主动结盟。在共同目标下凝聚力量，借助集体之势推进个人或团队目标。</p><p><strong>注意事项：</strong>合作要以诚信为基础，选择伙伴时要擦亮眼睛。犹豫不决、姗姗来迟可能让你被边缘化。</p>",
+      },
+      {
+        id: 9,
+        name: "小畜",
+        fullName: "风天小畜",
+        symbol: "䷈",
+        upperTrigram: "巽",
+        lowerTrigram: "乾",
+        lines: [1, 1, 1, 0, 1, 1],
+        hexagramText: "亨。密云不雨，自我西郊。",
+        translation: "通达。乌云密布却尚未降雨。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>你的力量正在积蓄但尚未充盈，就像乌云已聚却未落雨。大环境还不支持你大干一场，需要继续沉淀。</p><p><strong>行动建议：</strong>小步前进、持续积累资源、能力和人脉。利用这段时间修养内在、提升专业，为未来的突破做准备。</p><p><strong>注意事项：</strong>不要因为暂时没有结果而焦虑，也不要过早暴露全部实力。厚积薄发才是此卦的核心。</p>",
+      },
+      {
+        id: 10,
+        name: "履",
+        fullName: "天泽履",
+        symbol: "䷉",
+        upperTrigram: "乾",
+        lowerTrigram: "兑",
+        lines: [1, 1, 0, 1, 1, 1],
+        hexagramText: "履虎尾，不咥人，亨。",
+        translation: "踩到老虎尾巴，老虎不咬人，通达。",
+        fortune: "上中卦",
+        interpretation: "<p><strong>当前处境：</strong>你正面对看似危险或敏感的处境，如同踩在老虎身后行走。规则和层级分明，稍有不慎就可能触怒权威或引发风险。</p><p><strong>行动建议：</strong>谨言慎行、以礼待人，尊重规则和上下秩序。用谦逊恭敬的态度处理敏感事务，把分寸感放在第一位。</p><p><strong>注意事项：</strong>不要傲慢张扬，也不要为了迎合而失去本色。鲁莽越界或刻意讨好都会带来麻烦。</p>",
+      },
+      {
+        id: 11,
+        name: "泰",
+        fullName: "地天泰",
+        symbol: "䷊",
+        upperTrigram: "坤",
+        lowerTrigram: "乾",
+        lines: [1, 1, 1, 0, 0, 0],
+        hexagramText: "小往大来，吉亨。",
+        translation: "小的离去大的到来，吉祥通达。天地之气交融。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>这是天地交泰、万事亨通的阶段。你的努力开始得到回报，机会、资源和贵人都在向你汇聚，整体氛围积极向上。</p><p><strong>行动建议：</strong>顺应上升的运势积极行动，大胆推进计划。适合拓展业务、争取晋升、缔结良缘或启动新事业。</p><p><strong>注意事项：</strong>越顺利越要居安思危。泰极否来，要避免挥霍、自满和过度扩张，为未来的波动做好准备。</p>",
+      },
+      {
+        id: 12,
+        name: "否",
+        fullName: "天地否",
+        symbol: "䷋",
+        upperTrigram: "乾",
+        lowerTrigram: "坤",
+        lines: [0, 0, 0, 1, 1, 1],
+        hexagramText: "否之匪人，不利君子贞，大往小来。",
+        translation: "闭塞不通，不利于君子。大的离去小的到来。",
+        fortune: "中下卦",
+        interpretation: "<p><strong>当前处境：</strong>你正处于闭塞低谷期，诸事不顺或环境不利。这是人生中不可避免的下行阶段，小人当道或资源匮乏的感受会比较明显。</p><p><strong>行动建议：</strong>韬光养晦、收敛锋芒、保存实力。不要逆势强为，低调修身、节俭度日，等待否极泰来的转机。</p><p><strong>注意事项：</strong>越是困境越要坚守正道，不可同流合污。也不要为了虚荣或面子去冒险，撑到黎明才是关键。</p>",
+      },
+      {
+        id: 13,
+        name: "同人",
+        fullName: "天火同人",
+        symbol: "䷌",
+        upperTrigram: "乾",
+        lowerTrigram: "离",
+        lines: [1, 0, 1, 1, 1, 1],
+        hexagramText: "同人于野，亨。利涉大川，利君子贞。",
+        translation: "在旷野中与人和同，通达。利于涉越大河。",
+        fortune: "上中卦",
+        interpretation: "<p><strong>当前处境：</strong>现在是寻求合作、团结众人的最佳时机。单打独斗难以成事，但志同道合的人聚在一起就能跨越难关。</p><p><strong>行动建议：</strong>放下个人成见，主动与他人沟通协作。以共同目标凝聚人心，开放包容地接纳不同背景的人。</p><p><strong>注意事项：</strong>合作要建立在正道和共同利益之上，避免为了拉帮结派而牺牲原则，也要警惕表面合作、各怀心思。</p>",
+      },
+      {
+        id: 14,
+        name: "大有",
+        fullName: "火天大有",
+        symbol: "䷍",
+        upperTrigram: "离",
+        lowerTrigram: "乾",
+        lines: [1, 1, 1, 1, 0, 1],
+        hexagramText: "元亨。",
+        translation: "至为通达。大有收获，丰盛之象。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>你正处于丰收和富足的时期，拥有资源、名声或机会。这是上天眷顾、成果显现的阶段，值得珍惜。</p><p><strong>行动建议：</strong>善用所得，回馈他人。把资源和能力用在正道和有意义的事情上，适合扩大影响、布施分享或扶持弱者。</p><p><strong>注意事项：</strong>越拥有得多，越要谦虚谨慎。挥霍、傲慢、自满是大有卦最大的威胁，容易让好运迅速流失。</p>",
+      },
+      {
+        id: 15,
+        name: "谦",
+        fullName: "地山谦",
+        symbol: "䷎",
+        upperTrigram: "坤",
+        lowerTrigram: "艮",
+        lines: [0, 0, 1, 0, 0, 0],
+        hexagramText: "亨，君子有终。",
+        translation: "通达。谦虚的君子能有好的结局。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>无论你身处高位还是低谷，谦虚都是当前最有利的姿态。有实力而不张扬，反而能赢得更多支持与尊重。</p><p><strong>行动建议：</strong>像山藏于地下一样保持低调，乐于让利、帮助他人。用谦逊和包容的态度处理人际关系，积累长期口碑。</p><p><strong>注意事项：</strong>谦逊不等于自卑，也不等于放弃正当利益。要在自信的基础上保持低调，避免过度自贬。</p>",
+      },
+      {
+        id: 16,
+        name: "豫",
+        fullName: "雷地豫",
+        symbol: "䷏",
+        upperTrigram: "震",
+        lowerTrigram: "坤",
+        lines: [0, 0, 0, 1, 0, 0],
+        hexagramText: "利建侯行师。",
+        translation: "利于分封诸侯、出兵征伐。愉悦和乐，顺时而动。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>这是一个充满活力、令人愉悦的时期，形势顺遂、士气高昂。适合积极行动，但愉悦本身也容易让人放松警惕。</p><p><strong>行动建议：</strong>顺势而为，启动新项目、建立团队或拓展版图。把高涨的士气转化为具体行动和阶段性成果。</p><p><strong>注意事项：</strong>不可沉迷安逸、不思进取。在欢乐中要保持清醒，避免放纵和过度乐观导致后劲不足。</p>",
+      },
+      {
+        id: 17,
+        name: "随",
+        fullName: "泽雷随",
+        symbol: "䷐",
+        upperTrigram: "兑",
+        lowerTrigram: "震",
+        lines: [1, 0, 0, 1, 1, 0],
+        hexagramText: "元亨利贞，无咎。",
+        translation: "至为通达，利于坚守正道，没有灾祸。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>外部环境正在变化，固守一隅不如顺势调整。灵活变通、跟随大势会让你更容易找到突破口。</p><p><strong>行动建议：</strong>跟随正确的方向和值得信任的人，同时保持内心的原则。适合调整策略、加入新团队或顺应趋势做出改变。</p><p><strong>注意事项：</strong>随不是盲从。外在可以灵活，内心必须有底线。不要为了迎合而丢失自己的核心价值。</p>",
+      },
+      {
+        id: 18,
+        name: "蛊",
+        fullName: "山风蛊",
+        symbol: "䷑",
+        upperTrigram: "艮",
+        lowerTrigram: "巽",
+        lines: [0, 1, 1, 0, 0, 1],
+        hexagramText: "元亨，利涉大川。先甲三日，后甲三日。",
+        translation: "至为通达，利于涉越大河。甲日前三天谋划，后三天观察效果。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>事物长期积累已经产生弊病，无论是工作、关系还是自身习惯，都需要一次彻底的整顿和清理。</p><p><strong>行动建议：</strong>先深入分析问题的根源，再制定周密计划，然后果断执行。改革需要勇气，但更需要智慧和步骤。</p><p><strong>注意事项：</strong>不要急于求成，也不要半途而废。整治积弊需要时间和耐心，避免头痛医头、脚痛医脚的表面功夫。</p>",
+      },
+      {
+        id: 19,
+        name: "临",
+        fullName: "地泽临",
+        symbol: "䷒",
+        upperTrigram: "坤",
+        lowerTrigram: "兑",
+        lines: [1, 1, 0, 0, 0, 0],
+        hexagramText: "元亨利贞。至于八月有凶。",
+        translation: "至为通达，利于坚守正道。但到八月可能有凶险。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>好运正在走来，你即将迎来上升期。这是积极进取、扩大影响的好时机，贵人运和机会都在增强。</p><p><strong>行动建议：</strong>把握上升势头，主动承担责任，展现领导才能。以教导和包容之心对待他人，建立长远影响力。</p><p><strong>注意事项：</strong>好运不会永远持续。最顺利时要为困难做准备，居安思危，避免因得意而疏忽大意。</p>",
+      },
+      {
+        id: 20,
+        name: "观",
+        fullName: "风地观",
+        symbol: "䷓",
+        upperTrigram: "巽",
+        lowerTrigram: "坤",
+        lines: [0, 0, 0, 0, 1, 1],
+        hexagramText: "盥而不荐，有孚颙若。",
+        translation: "如同祭祀净手后尚未献祭，心怀诚信肃穆仰望。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>现在不是贸然行动的时候，而是观察、学习和思考的时候。你需要退后一步，以更高远的视角审视全局。</p><p><strong>行动建议：</strong>多观察、多学习、多反省。向有经验的人请教，研究行业或环境的变化趋势，用诚心和慧眼去看清事物本质。</p><p><strong>注意事项：</strong>不要急于下结论或行动。观卦强调的是洞察与领悟，盲目出手只会破坏时机或误判形势。</p>",
+      },
+      {
+        id: 21,
+        name: "噬嗑",
+        fullName: "火雷噬嗑",
+        symbol: "䷔",
+        upperTrigram: "离",
+        lowerTrigram: "震",
+        lines: [1, 0, 0, 1, 0, 1],
+        hexagramText: "亨，利用狱。",
+        translation: "通达。利于处理刑狱和法律事务。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>你正面临需要果断处理的障碍或问题。就像嘴里有硬物，不咬断就无法继续进食，拖延只会让情况更糟。</p><p><strong>行动建议：</strong>该断则断，不要拖延。用明确的规则和公正的态度处理问题，适合清理障碍、制定规章或处理纠纷。</p><p><strong>注意事项：</strong>果断不等于专断。处理问题要公正透明，避免意气用事、滥用权力或伤及无辜。</p>",
+      },
+      {
+        id: 22,
+        name: "贲",
+        fullName: "山火贲",
+        symbol: "䷕",
+        upperTrigram: "艮",
+        lowerTrigram: "离",
+        lines: [1, 0, 1, 0, 0, 1],
+        hexagramText: "亨，小利有攸往。",
+        translation: "通达。前往有小的利益。文饰之美。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>可以适当注重外在表现和形象包装，但文饰只是锦上添花。当前场合中，表达方式和第一印象会比较重要。</p><p><strong>行动建议：</strong>在提升真实能力的基础上，适度美化表达、改善形象。适合面试、演讲、品牌包装或重要社交场合。</p><p><strong>注意事项：</strong>不要本末倒置，过度追求外表而忽视内涵。最高境界是返璞归真，真诚和实力才是根本。</p>",
+      },
+      {
+        id: 23,
+        name: "剥",
+        fullName: "山地剥",
+        symbol: "䷖",
+        upperTrigram: "艮",
+        lowerTrigram: "坤",
+        lines: [0, 0, 0, 0, 0, 1],
+        hexagramText: "不利有攸往。",
+        translation: "不利于有所前往。阴盛阳衰，剥落之象。",
+        fortune: "中下卦",
+        interpretation: "<p><strong>当前处境：</strong>当前处于剥落衰退阶段，形势对你不利。这可能是外部环境变化，也可能是自身根基动摇，整体氛围低沉。</p><p><strong>行动建议：</strong>最明智的做法是静守不动、明哲保身。不要投资、扩张或与人对抗，先稳固根基、厚待身边人。</p><p><strong>注意事项：</strong>剥极必复，衰退终会停止。关键是不要在最低谷时做错误决定，保存火种、避免孤注一掷。</p>",
+      },
+      {
+        id: 24,
+        name: "复",
+        fullName: "地雷复",
+        symbol: "䷗",
+        upperTrigram: "坤",
+        lowerTrigram: "震",
+        lines: [1, 0, 0, 0, 0, 0],
+        hexagramText: "亨。出入无疾，朋来无咎。反复其道，七日来复。",
+        translation: "通达。出入无疾，朋友来访无灾祸。阴阳循环，七日回归。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>阳气开始回归，否极泰来的时刻已经到来。一切从低谷回升，希望正在萌芽，转机已经出现。</p><p><strong>行动建议：</strong>这是重新开始的好时机。可以着手修复关系、重启项目、调整方向，但回复是渐进的，不要急于求成。</p><p><strong>注意事项：</strong>珍惜这缕新生的阳气，不要过度消耗。循序渐进、稳扎稳打，才能让好运自然生长。</p>",
+      },
+      {
+        id: 25,
+        name: "无妄",
+        fullName: "天雷无妄",
+        symbol: "䷘",
+        upperTrigram: "乾",
+        lowerTrigram: "震",
+        lines: [1, 0, 0, 1, 1, 1],
+        hexagramText: "元亨利贞。其匪正有眚，不利有攸往。",
+        translation: "至为通达，利于坚守正道。行为不正则有灾祸。",
+        fortune: "上中卦",
+        interpretation: "<p><strong>当前处境：</strong>当前应保持真诚、不做作、不妄为。投机取巧或心怀邪念都会破坏原本顺畅的气运，顺应天道自然才是正途。</p><p><strong>行动建议：</strong>真心实意地做人做事，不耍小聪明，不图侥幸。适合踏实工作、诚信待人、按规则推进事务。</p><p><strong>注意事项：</strong>若有邪念或不轨之行，必招灾祸。保持正念是关键，不要试图走捷径或欺骗他人。</p>",
+      },
+      {
+        id: 26,
+        name: "大畜",
+        fullName: "山天大畜",
+        symbol: "䷙",
+        upperTrigram: "艮",
+        lowerTrigram: "乾",
+        lines: [1, 1, 1, 0, 0, 1],
+        hexagramText: "利贞，不家食吉，利涉大川。",
+        translation: "利于坚守正道。不在家自食则吉。利于涉越大河。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>你已经积蓄了足够的力量、资源和德行，内在储备充盈。现在是走出去发挥作用、承担更大责任的时候。</p><p><strong>行动建议：</strong>不要藏掖才华，到更大的舞台去施展。勇于承担重任，开拓进取，把积累转化为实际成果。</p><p><strong>注意事项：</strong>大畜的关键是德与能兼备。不要只积累不运用，也不要贸然行动而无准备，避免德不配位。</p>",
+      },
+      {
+        id: 27,
+        name: "颐",
+        fullName: "山雷颐",
+        symbol: "䷚",
+        upperTrigram: "艮",
+        lowerTrigram: "震",
+        lines: [1, 0, 0, 0, 0, 1],
+        hexagramText: "贞吉。观颐，自求口实。",
+        translation: "坚守正道则吉。观察颐养之道，自己谋求口中的食物。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>颐卦提醒你关注自身的滋养问题。物质和精神都需要正确的投入，当前的饮食、言语和收入来源都值得审视。</p><p><strong>行动建议：</strong>自食其力，不依赖他人。同时注意饮食健康、言语谨慎，选择对自己身心有益的人和事。</p><p><strong>注意事项：</strong>不要贪图不义之财，也不要传播是非。病从口入、祸从口出，此刻尤需自律。</p>",
+      },
+      {
+        id: 28,
+        name: "大过",
+        fullName: "泽风大过",
+        symbol: "䷛",
+        upperTrigram: "兑",
+        lowerTrigram: "巽",
+        lines: [0, 1, 1, 1, 1, 0],
+        hexagramText: "栋桡，利有攸往，亨。",
+        translation: "栋梁弯曲了，利于有所前往，通达。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>局面超出常态，你正承受巨大的压力。但大过也意味着非常之时需要非常之举，常规方法已经难以应对。</p><p><strong>行动建议：</strong>需要勇气和智慧采取不同寻常的行动。独立不惧、坚守信念，即使不被理解也要做正确的事。</p><p><strong>注意事项：</strong>风险很大，必须量力而行。大过不是鲁莽，而是在关键时刻敢于担当，避免孤注一掷的赌博。</p>",
+      },
+      {
+        id: 29,
+        name: "坎",
+        fullName: "坎为水",
+        symbol: "䷜",
+        upperTrigram: "坎",
+        lowerTrigram: "坎",
+        lines: [0, 1, 0, 0, 1, 0],
+        hexagramText: "习坎，有孚，维心亨，行有尚。",
+        translation: "重重险难，心怀诚信，维系内心通达，前行有所成就。",
+        fortune: "中下卦",
+        interpretation: "<p><strong>当前处境：</strong>你身处重重困难之中，阻碍接连不断。但险难之中也有通道，关键是保持内心的通达和信念。</p><p><strong>行动建议：</strong>灵活寻找出路，不要与困难正面死磕。学会以柔克刚、顺势而为，像水一样绕行和渗透。</p><p><strong>注意事项：</strong>困境中更要坚守品德，不可因绝望而放弃原则。坚持终将穿越险境，但急躁冒进只会陷入更深。</p>",
+      },
+      {
+        id: 30,
+        name: "离",
+        fullName: "离为火",
+        symbol: "䷝",
+        upperTrigram: "离",
+        lowerTrigram: "离",
+        lines: [1, 0, 1, 1, 0, 1],
+        hexagramText: "利贞，亨。畜牝牛，吉。",
+        translation: "利于坚守正道，通达。畜养母牛则吉。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>离卦象征光明附着于正确的依托。你需要找到合适的平台、关系或事业，才能发光发热，否则火力会空耗。</p><p><strong>行动建议：</strong>依附于正道和光明，以柔顺温和的态度行事。选择正确的依附对象，并持续传递光明与温暖。</p><p><strong>注意事项：</strong>依附不是攀附，而是互利共赢。保持自身的光明品格，不随波逐流，也不要过度依赖而失去自我。</p>",
+      },
+      {
+        id: 31,
+        name: "咸",
+        fullName: "泽山咸",
+        symbol: "䷞",
+        upperTrigram: "兑",
+        lowerTrigram: "艮",
+        lines: [0, 0, 1, 1, 1, 0],
+        hexagramText: "亨，利贞，取女吉。",
+        translation: "通达，利于坚守正道。迎娶女子则吉。",
+        fortune: "上中卦",
+        interpretation: "<p><strong>当前处境：</strong>咸卦讲感应，是心与心之间的吸引。此刻人与人之间的关系容易产生共鸣，真诚会换来真诚。</p><p><strong>行动建议：</strong>放下成见和算计，用真心换真心。虚心倾听、真诚回应，自然能与他人产生良性共鸣和默契。</p><p><strong>注意事项：</strong>感应需要双方真诚。若只是一厢情愿或带有明确目的，反而会产生误解和疏远。</p>",
+      },
+      {
+        id: 32,
+        name: "恒",
+        fullName: "雷风恒",
+        symbol: "䷟",
+        upperTrigram: "震",
+        lowerTrigram: "巽",
+        lines: [0, 1, 1, 1, 0, 0],
+        hexagramText: "亨，无咎，利贞，利有攸往。",
+        translation: "通达，没有灾祸，利于坚守正道，利于有所前往。",
+        fortune: "上中卦",
+        interpretation: "<p><strong>当前处境：</strong>做事需要恒心和毅力。成功不在于一时的爆发，而在于长期的坚持，当前正是考验耐力的时候。</p><p><strong>行动建议：</strong>确定正确方向后，持之以恒地努力。日复一日的积累终将带来可观的成果，把大目标拆成小步骤。</p><p><strong>注意事项：</strong>恒不是固执。方向正确才值得坚持，方向错了及时调整也是智慧，避免因面子而死撑。</p>",
+      },
+      {
+        id: 33,
+        name: "遁",
+        fullName: "天山遁",
+        symbol: "䷠",
+        upperTrigram: "乾",
+        lowerTrigram: "艮",
+        lines: [0, 0, 1, 1, 1, 1],
+        hexagramText: "亨，小利贞。",
+        translation: "通达，小有利益，利于坚守正道。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>局势不利，小人当道或环境对你构成压力。正面冲突代价太大，适时的退避是保全自己的明智选择。</p><p><strong>行动建议：</strong>远离是非之地和小人，保持尊严但不必撕破脸。韬光养晦，等待时机好转。</p><p><strong>注意事项：</strong>遁不是逃避，而是战略性撤退。保持内心清正，不与小人同流合污，也不要在撤退时自乱阵脚。</p>",
+      },
+      {
+        id: 34,
+        name: "大壮",
+        fullName: "雷天大壮",
+        symbol: "䷡",
+        upperTrigram: "震",
+        lowerTrigram: "乾",
+        lines: [1, 1, 1, 1, 0, 0],
+        hexagramText: "利贞。",
+        translation: "利于坚守正道。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>你正处于力量强盛的时期，精力充沛、信心十足。但强盛容易让人冲动冒进，需要特别警惕力量的误用。</p><p><strong>行动建议：</strong>用强大的力量去做正确的事，而不是仗势欺人。坚守正道、遵守规则，把力量用在建设性的事情上。</p><p><strong>注意事项：</strong>强者最大的危险是滥用力量。不符合道义的事不要做，避免因冲动而破坏长期积累。</p>",
+      },
+      {
+        id: 35,
+        name: "晋",
+        fullName: "火地晋",
+        symbol: "䷢",
+        upperTrigram: "离",
+        lowerTrigram: "坤",
+        lines: [0, 0, 0, 1, 0, 1],
+        hexagramText: "康侯用锡马蕃庶，昼日三接。",
+        translation: "康侯受赐众多车马，一天之内被接见三次。晋升之象。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>旭日东升，前途光明。你的努力开始被看见，有机会获得晋升、认可或重用，整体运势向上。</p><p><strong>行动建议：</strong>主动展现自己的能力和品德，但不要刻意炫耀。以光明正大的方式争取机会，自然会被赏识。</p><p><strong>注意事项：</strong>晋升路上要保持谦逊，感恩提携你的人。不要因为暂时的成绩冲昏头脑，也不要忽视潜在竞争。</p>",
+      },
+      {
+        id: 36,
+        name: "明夷",
+        fullName: "地火明夷",
+        symbol: "䷣",
+        upperTrigram: "坤",
+        lowerTrigram: "离",
+        lines: [1, 0, 1, 0, 0, 0],
+        hexagramText: "利艰贞。",
+        translation: "在艰难中坚守正道则有利。",
+        fortune: "中下卦",
+        interpretation: "<p><strong>当前处境：</strong>光明被遮蔽，你可能遭遇误解、打压或不公。此时锋芒太露只会招来更多麻烦，需要暂时隐藏。</p><p><strong>行动建议：</strong>收敛光芒、韬光养晦，在暗中积蓄力量。用含蓄的方式处理问题，保护好自己的核心利益。</p><p><strong>注意事项：</strong>用晦而明，表面低调但内心清醒。不要放弃原则，但要学会保护自己，避免正面硬碰。</p>",
+      },
+      {
+        id: 37,
+        name: "家人",
+        fullName: "风火家人",
+        symbol: "䷤",
+        upperTrigram: "巽",
+        lowerTrigram: "离",
+        lines: [1, 0, 1, 0, 1, 1],
+        hexagramText: "利女贞。",
+        translation: "利于女子坚守正道。家庭和睦之象。",
+        fortune: "上中卦",
+        interpretation: "<p><strong>当前处境：</strong>家庭或团队内部需要和谐有序。一切外在成就都建立在内在关系稳定的基础上，内部氛围直接影响整体发展。</p><p><strong>行动建议：</strong>重视家庭关系，明确各自角色与责任。说话要有内容，做事要有恒心，成为身边人的稳定依靠。</p><p><strong>注意事项：</strong>家庭事务没有小事。多一点耐心和理解，少一点指责和抱怨，避免把外部情绪带回内部。</p>",
+      },
+      {
+        id: 38,
+        name: "睽",
+        fullName: "火泽睽",
+        symbol: "䷥",
+        upperTrigram: "离",
+        lowerTrigram: "兑",
+        lines: [1, 1, 0, 1, 0, 1],
+        hexagramText: "小事吉。",
+        translation: "小事吉祥。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>人与人之间存在分歧和差异，目标或立场不一致。强求一致反而会造成更大隔阂，表面和谐下暗藏张力。</p><p><strong>行动建议：</strong>接受差异，在差异中寻求共识。大事上若有分歧，不妨先处理小事，以小见大、逐步弥合。</p><p><strong>注意事项：</strong>在共同目标下保留各自特色，不要强迫别人完全认同你。避免把分歧升级成对立。</p>",
+      },
+      {
+        id: 39,
+        name: "蹇",
+        fullName: "水山蹇",
+        symbol: "䷦",
+        upperTrigram: "坎",
+        lowerTrigram: "艮",
+        lines: [0, 0, 1, 0, 1, 0],
+        hexagramText: "利西南，不利东北；利见大人，贞吉。",
+        translation: "利于西南，不利于东北。利于拜见贵人，坚守正道则吉。",
+        fortune: "中下卦",
+        interpretation: "<p><strong>当前处境：</strong>前行艰难，阻碍重重。就像水在山上，举步维艰，此刻不宜硬闯，需要调整节奏。</p><p><strong>行动建议：</strong>遇到困难先反省自身，提升德行和能力。同时寻求贵人帮助，借助外力突破困境。</p><p><strong>注意事项：</strong>很多时候问题不在外界，而在自己。调整心态和能力，路自然会顺。不要怨天尤人或一意孤行。</p>",
+      },
+      {
+        id: 40,
+        name: "解",
+        fullName: "雷水解",
+        symbol: "䷧",
+        upperTrigram: "震",
+        lowerTrigram: "坎",
+        lines: [0, 1, 0, 0, 1, 1],
+        hexagramText: "利西南。无所往，其来复吉。有攸往，夙吉。",
+        translation: "利于西南。没有去的地方，回来则吉。有所前往，早去则吉。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>雷雨过后，困境开始缓解。长期积累的问题终于有了松动的迹象，压抑的气氛正在消散。</p><p><strong>行动建议：</strong>抓住机会化解矛盾、释放压力。对过去的过失适当宽容，给别人也给自己一次重新开始的机会。</p><p><strong>注意事项：</strong>解困要趁早，不要等问题再次积压。同时保持宽厚，不要过于追究，避免旧怨重燃。</p>",
+      },
+      {
+        id: 41,
+        name: "损",
+        fullName: "山泽损",
+        symbol: "䷨",
+        upperTrigram: "艮",
+        lowerTrigram: "兑",
+        lines: [1, 1, 0, 0, 0, 1],
+        hexagramText: "有孚，元吉，无咎，可贞，利有攸往。曷之用，二簋可用享。",
+        translation: "心怀诚信，至为吉祥，没有灾祸。可以坚守正道，利于有所前往。祭祀只需两簋即可。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>损卦讲的是舍与得。有时候必须先有所损失，才能获得更大的利益，当前的减法是为了未来的加法。</p><p><strong>行动建议：</strong>克制愤怒和欲望，减少不必要的消耗。在适当的时候主动让利、捐弃、简化，反而会得到更多。</p><p><strong>注意事项：</strong>损下益上要讲诚信，损己利人要量力而行。不要为了面子而过度付出，避免牺牲核心利益。</p>",
+      },
+      {
+        id: 42,
+        name: "益",
+        fullName: "风雷益",
+        symbol: "䷩",
+        upperTrigram: "巽",
+        lowerTrigram: "震",
+        lines: [1, 0, 0, 0, 1, 1],
+        hexagramText: "利有攸往，利涉大川。",
+        translation: "利于有所前往，利于涉越大河。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>这是一个收获增益的时期，努力会得到加倍的回报。风雷相济，势头正旺，适合积极进取。</p><p><strong>行动建议：</strong>积极进取，大胆行动。看到好的做法就学习，发现错误就改正。越主动，越有益。</p><p><strong>注意事项：</strong>增益要用于正道，不可贪图不义之财。善于迁善改过的人，才能得到真正持久的益。</p>",
+      },
+      {
+        id: 43,
+        name: "夬",
+        fullName: "泽天夬",
+        symbol: "䷪",
+        upperTrigram: "兑",
+        lowerTrigram: "乾",
+        lines: [1, 1, 1, 1, 1, 0],
+        hexagramText: "扬于王庭，孚号，有厉。告自邑，不利即戎，利有攸往。",
+        translation: "在王庭上宣扬，诚信号召，有危险。告诫自己领地的人，不利立即动武，利于有所前往。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>你正面临需要果断决断的时刻。问题已经很明显，拖延只会让局势更加复杂，必须做出抉择。</p><p><strong>行动建议：</strong>公开透明地处理问题，以诚信赢得支持。但要避免使用激烈手段，选择对大家伤害最小的方式推进。</p><p><strong>注意事项：</strong>决断需要勇气，也要注意方式方法。居功自傲、独断专行是大忌，避免伤及无辜或激化矛盾。</p>",
+      },
+      {
+        id: 44,
+        name: "姤",
+        fullName: "天风姤",
+        symbol: "䷫",
+        upperTrigram: "乾",
+        lowerTrigram: "巽",
+        lines: [0, 1, 1, 1, 1, 1],
+        hexagramText: "女壮，勿用取女。",
+        translation: "女子强盛，不宜娶为妻子。相遇之象。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>不期而遇的机会或人物出现，但其中可能隐藏着不稳定因素。需要谨慎辨别，不宜仓促接纳。</p><p><strong>行动建议：</strong>对新出现的机会保持开放，但也要深入考察其背景和动机。不要被表象迷惑，先观察再决定。</p><p><strong>注意事项：</strong>姤卦提醒你要防微杜渐。一个小小的开始可能影响深远，务必慎重，避免因好奇而陷入困境。</p>",
+      },
+      {
+        id: 45,
+        name: "萃",
+        fullName: "泽地萃",
+        symbol: "䷬",
+        upperTrigram: "兑",
+        lowerTrigram: "坤",
+        lines: [0, 0, 0, 1, 1, 0],
+        hexagramText: "亨。王假有庙，利见大人，亨，利贞。用大牲吉，利有攸往。",
+        translation: "通达。君王来到宗庙，利于拜见贵人，利于坚守正道。用大牲祭祀吉祥，利于有所前往。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>众人汇聚，机会云集。这是聚集资源、人脉和力量的好时机，集体的能量正在形成。</p><p><strong>行动建议：</strong>主动组织和参与聚会、会议、活动，凝聚人心。借助集体的力量推动目标实现，发挥枢纽作用。</p><p><strong>注意事项：</strong>聚会要有共同的目标和信念，不要流于形式。同时要居安思危，做好风险防范和内部协调。</p>",
+      },
+      {
+        id: 46,
+        name: "升",
+        fullName: "地风升",
+        symbol: "䷭",
+        upperTrigram: "坤",
+        lowerTrigram: "巽",
+        lines: [0, 1, 1, 0, 0, 0],
+        hexagramText: "元亨，用见大人，勿恤，南征吉。",
+        translation: "至为通达。宜拜见贵人，不必忧虑。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>如树木从地中向上生长，你的事业或处境正在稳步上升。前景光明，值得期待，但成长需要时间。</p><p><strong>行动建议：</strong>循序渐进、踏实前行。主动寻求贵人指点，把每一个小进步都走扎实，像树木一样自然长高。</p><p><strong>注意事项：</strong>上升的基础是积累。不要因为看到进步就松懈，也不要因为想快速成功而走捷径。</p>",
+      },
+      {
+        id: 47,
+        name: "困",
+        fullName: "泽水困",
+        symbol: "䷮",
+        upperTrigram: "兑",
+        lowerTrigram: "坎",
+        lines: [0, 1, 0, 1, 1, 0],
+        hexagramText: "亨，贞，大人吉，无咎，有言不信。",
+        translation: "通达，坚守正道。有德行的人吉祥。所说的话不一定被相信。",
+        fortune: "中下卦",
+        interpretation: "<p><strong>当前处境：</strong>你正处于困境之中，资源匮乏、进退两难。但困境往往是成就一个人的契机，考验的是心志。</p><p><strong>行动建议：</strong>穷且益坚，不坠青云之志。不要急于辩解，用行动证明一切。必要时可为了志向而承受暂时的牺牲。</p><p><strong>注意事项：</strong>困境中说话未必有人信，不如少说多做。保持正直，等待转机，不要因绝望而放弃底线。</p>",
+      },
+      {
+        id: 48,
+        name: "井",
+        fullName: "水风井",
+        symbol: "䷯",
+        upperTrigram: "坎",
+        lowerTrigram: "巽",
+        lines: [0, 1, 1, 0, 1, 0],
+        hexagramText: "改邑不改井，无丧无得，往来井井。",
+        translation: "城邑可改但水井不变。没有丧失也没有获得。井然有序。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>水井象征你内在的品德、知识和技能。外部环境无论如何变化，你的核心价值不会消失，但需要持续维护。</p><p><strong>行动建议：</strong>持续维护和提升自己的能力，就像定期清理水井一样。让核心能力保持清澈和可用。</p><p><strong>注意事项：</strong>井需要有人来取水才有价值。能力要用于服务他人，不要闭门造车或让才能荒废。</p>",
+      },
+      {
+        id: 49,
+        name: "革",
+        fullName: "泽火革",
+        symbol: "䷰",
+        upperTrigram: "兑",
+        lowerTrigram: "离",
+        lines: [1, 0, 1, 1, 1, 0],
+        hexagramText: "已日乃孚，元亨利贞，悔亡。",
+        translation: "到了己日才获信任。至为通达，悔恨消亡。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>变革的时机已经到来。旧秩序无法适应新需求，必须做出改变，否则会被时代淘汰。</p><p><strong>行动建议：</strong>充分准备、赢得信任后再推行变革。确认方向正确就大胆改革，破旧才能立新。</p><p><strong>注意事项：</strong>变革需要时间让人接受。不要急于求成，也不要在条件不成熟时强行推进，避免引发反弹。</p>",
+      },
+      {
+        id: 50,
+        name: "鼎",
+        fullName: "火风鼎",
+        symbol: "䷱",
+        upperTrigram: "离",
+        lowerTrigram: "巽",
+        lines: [0, 1, 1, 1, 0, 1],
+        hexagramText: "元吉，亨。",
+        translation: "至为吉祥，通达。鼎器之象，革故鼎新。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>鼎象征把生的变成熟的，新秩序正在建立。这是建设新事物、收获成果的好时机，关键在于找准支撑点。</p><p><strong>行动建议：</strong>找到稳固的支撑点，端正自己的位置和使命。用成熟稳重的方式把资源转化为实际成果。</p><p><strong>注意事项：</strong>鼎需要摆正才能立稳。确立正确的角色和定位是成功的关键，避免角色模糊或根基不稳。</p>",
+      },
+      {
+        id: 51,
+        name: "震",
+        fullName: "震为雷",
+        symbol: "䷲",
+        upperTrigram: "震",
+        lowerTrigram: "震",
+        lines: [1, 0, 0, 1, 0, 0],
+        hexagramText: "亨。震来虩虩，笑言哑哑。震惊百里，不丧匕鬯。",
+        translation: "通达。雷声令人恐惧，过后谈笑自如。震惊百里手中酒没洒。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>可能有突如其来的变故让你受惊。但震惊过后你会发现，影响并没有想象中那么大，更多是心理冲击。</p><p><strong>行动建议：</strong>面对突发事件保持镇定。能在大震动中不失态的人，才真正有担当，先稳定情绪再处理问题。</p><p><strong>注意事项：</strong>震惊是修身的契机。反思自己是否有疏忽，从惊吓中汲取教训，避免因慌乱而做出错误决定。</p>",
+      },
+      {
+        id: 52,
+        name: "艮",
+        fullName: "艮为山",
+        symbol: "䷳",
+        upperTrigram: "艮",
+        lowerTrigram: "艮",
+        lines: [0, 0, 1, 0, 0, 1],
+        hexagramText: "艮其背，不获其身，行其庭，不见其人，无咎。",
+        translation: "抑止其背部使其不能获得身体。走在庭院不见其人，没有灾祸。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>核心是止，懂得适时停止。该停的时候就停，不要勉强前进，当前的静止是一种必要的休整。</p><p><strong>行动建议：</strong>如山般稳固不动，守住自己的位置和本分。不要盲目扩张，不要越界干涉，把该停的事停下来。</p><p><strong>注意事项：</strong>知止则不殆。知道何时停下是高级智慧，但停下不等于逃避责任，而是为了更好的出发。</p>",
+      },
+      {
+        id: 53,
+        name: "渐",
+        fullName: "风山渐",
+        symbol: "䷴",
+        upperTrigram: "巽",
+        lowerTrigram: "艮",
+        lines: [0, 0, 1, 0, 1, 1],
+        hexagramText: "女归吉，利贞。",
+        translation: "女子出嫁则吉，利于坚守正道。循序渐进。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>做事要循序渐进，不可急功近利。像大雁一步步从水边飞到山上，每个阶段都有其自然节奏。</p><p><strong>行动建议：</strong>尊重自然规律，按步骤扎实推进。不要跳过必要的阶段，也不要被他人的速度打乱自己的节奏。</p><p><strong>注意事项：</strong>慢即是快。扎实走好每一步，终能到达目标。不要因为着急而降低标准或冒险跃进。</p>",
+      },
+      {
+        id: 54,
+        name: "归妹",
+        fullName: "雷泽归妹",
+        symbol: "䷵",
+        upperTrigram: "震",
+        lowerTrigram: "兑",
+        lines: [1, 1, 0, 1, 0, 0],
+        hexagramText: "征凶，无攸利。",
+        translation: "前往有凶险，没有什么利益。",
+        fortune: "下下卦",
+        interpretation: "<p><strong>当前处境：</strong>当前不宜勉强行事。像不合时宜的结合，条件不成熟时硬凑在一起，很难有好的结果。</p><p><strong>行动建议：</strong>时机不对或条件不具备时，宁可等待也不要仓促行动。先完善自身，再谈结合或推进。</p><p><strong>注意事项：</strong>不要被外界压力推着走。草率决定可能带来长期的遗憾，避免因孤独或焦虑而将就。</p>",
+      },
+      {
+        id: 55,
+        name: "丰",
+        fullName: "雷火丰",
+        symbol: "䷶",
+        upperTrigram: "震",
+        lowerTrigram: "离",
+        lines: [1, 0, 1, 1, 0, 0],
+        hexagramText: "亨，王假之，勿忧，宜日中。",
+        translation: "通达。君王可达丰盛，不必忧虑，宜如正午之阳。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>正处于丰盛时期，如日中天。展现才华、成就事业的好时机，资源和机会都比较充裕。</p><p><strong>行动建议：</strong>珍惜当下，全力以赴。同时保持公正清明，处理好该做的事情，把丰盛转化为可持续的成果。</p><p><strong>注意事项：</strong>丰盛如正午太阳，接下来会逐渐西斜。要为未来做准备，不可挥霍，也不要被成功冲昏头脑。</p>",
+      },
+      {
+        id: 56,
+        name: "旅",
+        fullName: "火山旅",
+        symbol: "䷷",
+        upperTrigram: "离",
+        lowerTrigram: "艮",
+        lines: [0, 0, 1, 1, 0, 1],
+        hexagramText: "小亨，旅贞吉。",
+        translation: "小有亨通。旅行中坚守正道则吉。",
+        fortune: "中下卦",
+        interpretation: "<p><strong>当前处境：</strong>你可能处于旅途之中，可能是真正的出行，也可能是人生的过渡期。客居他乡，根基不稳，需要适应。</p><p><strong>行动建议：</strong>保持低调谦逊，柔顺处事。适应环境、随遇而安，把该办的事办好，不与人争执。</p><p><strong>注意事项：</strong>旅途中不可计较琐碎，也不要过于张扬。明哲保身、谨慎用度，避免因不熟悉环境而吃亏。</p>",
+      },
+      {
+        id: 57,
+        name: "巽",
+        fullName: "巽为风",
+        symbol: "䷸",
+        upperTrigram: "巽",
+        lowerTrigram: "巽",
+        lines: [0, 1, 1, 0, 1, 1],
+        hexagramText: "小亨，利有攸往，利见大人。",
+        translation: "小有亨通，利于有所前往，利于拜见贵人。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>像风一样柔和地渗透和传达。以谦逊柔顺的方式推行想法，比强硬命令更有效，适合潜移默化地影响。</p><p><strong>行动建议：</strong>深入事物内部，以潜移默化的方式产生影响。多请示、多沟通、多顺势而为，用柔劲推动进展。</p><p><strong>注意事项：</strong>谦逊要有度，过度谦逊会失去立场。该明确指令时要明确，避免一味退让让人忽视你的价值。</p>",
+      },
+      {
+        id: 58,
+        name: "兑",
+        fullName: "兑为泽",
+        symbol: "䷹",
+        upperTrigram: "兑",
+        lowerTrigram: "兑",
+        lines: [1, 1, 0, 1, 1, 0],
+        hexagramText: "亨，利贞。",
+        translation: "通达，利于坚守正道。喜悦和乐。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>以喜悦和真诚态度对待他人，会带来好结果。发自内心的快乐是最有力量的沟通方式，氛围轻松融洽。</p><p><strong>行动建议：</strong>与朋友、同事多交流讨论，互相学习。用真诚和喜悦感染身边的人，建立良好的互动关系。</p><p><strong>注意事项：</strong>区分真正的喜悦和表面的讨好。刻意取悦他人反而凶险，不要为了迎合而说出违心的话。</p>",
+      },
+      {
+        id: 59,
+        name: "涣",
+        fullName: "风水涣",
+        symbol: "䷺",
+        upperTrigram: "巽",
+        lowerTrigram: "坎",
+        lines: [0, 1, 0, 0, 1, 1],
+        hexagramText: "亨。王假有庙，利涉大川，利贞。",
+        translation: "通达。君王来到宗庙。利于涉越大河。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>涣散的力量需要重新凝聚。可能团队出现离心力，或你自身感到迷茫，整体方向感不足。</p><p><strong>行动建议：</strong>通过共同信仰、目标或仪式感重新凝聚人心。找到让大家重新团结的核心，重建秩序和信心。</p><p><strong>注意事项：</strong>涣散中也有机会。化解分散、重整秩序，就能形成新的合力。避免放任自流或各自为政。</p>",
+      },
+      {
+        id: 60,
+        name: "节",
+        fullName: "水泽节",
+        symbol: "䷻",
+        upperTrigram: "坎",
+        lowerTrigram: "兑",
+        lines: [1, 1, 0, 0, 1, 0],
+        hexagramText: "亨，苦节不可贞。",
+        translation: "通达。但过于苦楚的节制不可坚守。",
+        fortune: "中上卦",
+        interpretation: "<p><strong>当前处境：</strong>节制和自律必要，但要有度。像竹子有节，有节奏有规矩，但不能逼自己太紧，否则反而断裂。</p><p><strong>行动建议：</strong>建立合理的制度和节奏，该省的省，该享受的也要享受。找到平衡才能长久。</p><p><strong>注意事项：</strong>过度节俭和自律反而让人窒息。苦节不可贞，避免走极端，也不要用苛刻标准对待他人。</p>",
+      },
+      {
+        id: 61,
+        name: "中孚",
+        fullName: "风泽中孚",
+        symbol: "䷼",
+        upperTrigram: "巽",
+        lowerTrigram: "兑",
+        lines: [1, 1, 0, 0, 1, 1],
+        hexagramText: "豚鱼吉，利涉大川，利贞。",
+        translation: "诚信连猪鱼都能感动则吉。利于涉越大河。",
+        fortune: "上上卦",
+        interpretation: "<p><strong>当前处境：</strong>内心真诚是你最强大的力量。以真心实意对待一切，即使最微小的事物也不敷衍，信任正在建立。</p><p><strong>行动建议：</strong>用真诚感化他人、化解矛盾。不需要华丽言辞，一颗真心就够了，适合修复关系或建立合作。</p><p><strong>注意事项：</strong>诚信要发自内心，不能流于表面。虚有其表的诚信终会败露，不要为了效果而表演真诚。</p>",
+      },
+      {
+        id: 62,
+        name: "小过",
+        fullName: "雷山小过",
+        symbol: "䷽",
+        upperTrigram: "震",
+        lowerTrigram: "艮",
+        lines: [0, 0, 1, 1, 0, 0],
+        hexagramText: "亨，利贞，可小事，不可大事。飞鸟遗之音，不宜上宜下，大吉。",
+        translation: "通达。可做小事不可做大事。飞鸟不宜上宜下，大吉。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>可以有小的突破，但不能过度。脚踏实地、降低期望、务实行事，是当前最稳妥的状态。</p><p><strong>行动建议：</strong>像飞鸟低飞一样，把目标调低一些，反而能安全着陆。专注于可控的小事，把细节做到位。</p><p><strong>注意事项：</strong>不要好高骛远。小事做好了，自然会积累成大事。避免因贪大求全而导致失控。</p>",
+      },
+      {
+        id: 63,
+        name: "既济",
+        fullName: "水火既济",
+        symbol: "䷾",
+        upperTrigram: "坎",
+        lowerTrigram: "离",
+        lines: [1, 0, 1, 0, 1, 0],
+        hexagramText: "亨小，利贞，初吉终乱。",
+        translation: "小有通达，利于坚守正道。开始吉祥最终混乱。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>事情已经完成，但卦辞警示成功后如果不谨慎，就会走向混乱。盛极必衰是自然规律，需要保持清醒。</p><p><strong>行动建议：</strong>居安思危，做好善后和巩固。不要继续扩张，而是守住成果、防范风险，把成功稳定下来。</p><p><strong>注意事项：</strong>最危险的时候往往是成功之后。保持警惕，防止小问题演变成大乱，不要因松懈而前功尽弃。</p>",
+      },
+      {
+        id: 64,
+        name: "未济",
+        fullName: "火水未济",
+        symbol: "䷿",
+        upperTrigram: "离",
+        lowerTrigram: "坎",
+        lines: [0, 1, 0, 1, 0, 1],
+        hexagramText: "亨，小狐汔济，濡其尾，无攸利。",
+        translation: "通达。小狐几乎渡过河却湿了尾巴，没有好处。",
+        fortune: "中中卦",
+        interpretation: "<p><strong>当前处境：</strong>事情尚未完成，还差最后一步。就像小狐狸快要过河却湿了尾巴，功亏一篑的风险很大。</p><p><strong>行动建议：</strong>越是接近成功越要谨慎。不要松懈，保持专注和耐心，把最后一步走稳，确保圆满收尾。</p><p><strong>注意事项：</strong>最后一步往往最关键。鲁莽冒进可能让所有努力付诸东流，避免因大意而在终点前跌倒。</p>",
+      },
+      ];
+
+  // ===== Particle System =====
+  class ParticleSystem {
+    constructor(canvas, options = {}) {
+      this.canvas = canvas;
+      this.ctx = canvas.getContext('2d');
+      this.particles = [];
+      this.opt = {
+        count: options.count || 50,
+        color: options.color || 'rgba(212,165,116,',
+        minSize: options.minSize || 1,
+        maxSize: options.maxSize || 3,
+        minSpeed: options.minSpeed || 0.2,
+        maxSpeed: options.maxSpeed || 0.8,
+        drift: options.drift || 0.3,
+        direction: options.direction || 'up',
+        glow: options.glow || false,
+        ...options
+      };
+      this.running = false;
+      this.raf = null;
+      this.resize();
+      window.addEventListener('resize', () => this.resize());
+    }
+    resize() {
+      const parent = this.canvas.parentElement;
+      const rect = parent ? parent.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight };
+      this.canvas.width = rect.width * (window.devicePixelRatio || 1);
+      this.canvas.height = rect.height * (window.devicePixelRatio || 1);
+      this.canvas.style.width = rect.width + 'px';
+      this.canvas.style.height = rect.height + 'px';
+      this.ctx.setTransform(1,0,0,1,0,0);
+      this.ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+      this.w = rect.width;
+      this.h = rect.height;
+    }
+    init() {
+      this.particles = [];
+      for (let i = 0; i < this.opt.count; i++) {
+        this.particles.push(this.createParticle());
+      }
+    }
+    createParticle(randomY = true) {
+      const size = this.opt.minSize + Math.random() * (this.opt.maxSize - this.opt.minSize);
+      const speed = this.opt.minSpeed + Math.random() * (this.opt.maxSpeed - this.opt.minSpeed);
+      return {
+        x: Math.random() * this.w,
+        y: randomY ? Math.random() * this.h : (this.opt.direction === 'up' ? this.h + 10 : Math.random() * this.h),
+        size, speed,
+        opacity: 0.1 + Math.random() * 0.5,
+        drift: (Math.random() - 0.5) * this.opt.drift,
+        phase: Math.random() * Math.PI * 2,
+        phaseSpeed: 0.005 + Math.random() * 0.015,
+      };
+    }
+    start() {
+      if (this.running) return;
+      this.running = true;
+      this.init();
+      this.animate();
+    }
+    stop() {
+      this.running = false;
+      if (this.raf) cancelAnimationFrame(this.raf);
+    }
+    animate() {
+      if (!this.running) return;
+      this.ctx.clearRect(0, 0, this.w, this.h);
+      this.particles = this.particles.filter(p => {
+        if (p.burst) {
+          p.x += p.drift;
+          p.y += (p.vy || 0);
+          p.life -= 0.015;
+          p.drift *= 0.98;
+          if (p.vy) p.vy *= 0.98;
+          if (p.life <= 0) return false;
+          const op = p.opacity * p.life;
+          if (this.opt.glow) {
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, p.size * 4, 0, Math.PI * 2);
+            this.ctx.fillStyle = this.opt.color + (op * 0.2) + ')';
+            this.ctx.fill();
+          }
+          this.ctx.beginPath();
+          this.ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+          this.ctx.fillStyle = this.opt.color + op + ')';
+          this.ctx.fill();
+          return true;
+        }
+        p.phase += p.phaseSpeed;
+        p.x += p.drift + Math.sin(p.phase) * 0.3;
+        if (this.opt.direction === 'up') {
+          p.y -= p.speed;
+          if (p.y < -10) {
+            Object.assign(p, this.createParticle(false));
+            p.y = this.h + 10;
+          }
+        } else if (this.opt.direction === 'float') {
+          p.y += Math.sin(p.phase) * 0.5;
+          p.x += Math.cos(p.phase * 0.7) * 0.3;
+          if (p.x < -10 || p.x > this.w + 10 || p.y < -10 || p.y > this.h + 10) {
+            Object.assign(p, this.createParticle());
+          }
+        }
+        const op = p.opacity * (0.6 + Math.sin(p.phase) * 0.4);
+        if (this.opt.glow && p.size > 1.5) {
+          this.ctx.beginPath();
+          this.ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+          this.ctx.fillStyle = this.opt.color + (op * 0.15) + ')';
+          this.ctx.fill();
+        }
+        this.ctx.beginPath();
+        this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        this.ctx.fillStyle = this.opt.color + op + ')';
+        this.ctx.fill();
+        return true;
+      });
+      this.raf = requestAnimationFrame(() => this.animate());
+    }
+    burst(x, y, count = 30) {
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+        const speed = 1 + Math.random() * 3;
+        const size = 1 + Math.random() * 2.5;
+        this.particles.push({
+          x, y, size, speed,
+          opacity: 0.6 + Math.random() * 0.4,
+          drift: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          phase: 0, phaseSpeed: 0.02,
+          burst: true, life: 1
+        });
+      }
+    }
+  }
+
+  // ===== Bagua Ring Setup =====
+  function setupBaguaRing() {
+    const trigrams = ['☰','☱','☲','☳','☴','☵','☶','☷'];
+    const inner = document.getElementById('baguaRingInner');
+    const slow = document.getElementById('baguaRingSlow');
+    if (!inner || !slow) return;
+    const radius = 150;
+    trigrams.forEach((t, i) => {
+      const angle = (Math.PI * 2 * i) / trigrams.length - Math.PI / 2;
+      const el = document.createElement('span');
+      el.className = 'bagua-char';
+      el.textContent = t;
+      el.style.left = (50 + (radius / 2.6) * Math.cos(angle)) + '%';
+      el.style.top = (50 + (radius / 2.6) * Math.sin(angle)) + '%';
+      el.style.transform = 'translate(-50%,-50%)';
+      inner.appendChild(el);
+    });
+    const chars = '乾兑离震巽坎艮坤';
+    const radius2 = 180;
+    [...chars].forEach((c, i) => {
+      const angle = (Math.PI * 2 * i) / chars.length - Math.PI / 2;
+      const el = document.createElement('span');
+      el.className = 'bagua-char';
+      el.textContent = c;
+      el.style.left = (50 + (radius2 / 3.2) * Math.cos(angle)) + '%';
+      el.style.top = (50 + (radius2 / 3.2) * Math.sin(angle)) + '%';
+      el.style.transform = 'translate(-50%,-50%)';
+      slow.appendChild(el);
+    });
+  }
+
+  // ===== Taiji Orbit Setup =====
+  function setupTaijiOrbit() {
+    const orbit = document.getElementById('taiji-orbit');
+    if (!orbit) return;
+    const trigrams = ['☰','☱','☲','☳','☴','☵','☶','☷'];
+    const r = 70;
+    trigrams.forEach((t, i) => {
+      const angle = (Math.PI * 2 * i) / trigrams.length;
+      const el = document.createElement('span');
+      el.className = 'taiji-orbit-char';
+      el.textContent = t;
+      el.style.left = (50 + (r / 1.6) * Math.cos(angle)) + '%';
+      el.style.top = (50 + (r / 1.6) * Math.sin(angle)) + '%';
+      el.style.transform = 'translate(-50%,-50%)';
+      orbit.appendChild(el);
+    });
+  }
+
+  // ===== Particle Systems Instances =====
+  let landingPS, contemplatePS, drawingPS, resultPS;
+
+  function stopAllParticles() {
+    [landingPS, contemplatePS, drawingPS, resultPS].forEach(ps => { if (ps) ps.stop(); });
+  }
+
+  function initParticles() {
+    const lc = document.getElementById('landing-canvas');
+    if (lc) {
+      landingPS = new ParticleSystem(lc, {
+        count: 60, color: 'rgba(212,165,116,', minSize: 1, maxSize: 3,
+        minSpeed: 0.15, maxSpeed: 0.5, drift: 0.2, direction: 'up', glow: true
+      });
+      landingPS.start();
+    }
+  }
+
+  function startContemplateParticles() {
+    const cc = document.getElementById('contemplate-canvas');
+    if (cc && !contemplatePS) {
+      contemplatePS = new ParticleSystem(cc, {
+        count: 25, color: 'rgba(232,168,56,', minSize: 0.5, maxSize: 2,
+        minSpeed: 0.3, maxSpeed: 0.8, drift: 0.15, direction: 'up', glow: true
+      });
+    }
+    if (contemplatePS) contemplatePS.start();
+  }
+
+  function startDrawingParticles() {
+    const dc = document.getElementById('drawing-canvas');
+    if (dc && !drawingPS) {
+      drawingPS = new ParticleSystem(dc, {
+        count: 30, color: 'rgba(212,165,116,', minSize: 1, maxSize: 3.5,
+        minSpeed: 0.1, maxSpeed: 0.4, drift: 0.3, direction: 'float', glow: true
+      });
+    }
+    if (drawingPS) drawingPS.start();
+  }
+
+  function startResultParticles() {
+    const rc = document.getElementById('result-canvas');
+    if (rc && !resultPS) {
+      resultPS = new ParticleSystem(rc, {
+        count: 35, color: 'rgba(212,165,116,', minSize: 0.8, maxSize: 2.5,
+        minSpeed: 0.1, maxSpeed: 0.3, drift: 0.15, direction: 'float', glow: true
+      });
+    }
+    if (resultPS) resultPS.start();
+  }
+
+  // ===== Ink Wash Transition =====
+  async function inkTransition() {
+    const el = document.getElementById('inkTransition');
+    el.classList.add('active');
+    await delay(400);
+    el.classList.remove('active');
+  }
+
+  // ===== App Logic =====
+  const HISTORY_KEY = 'iching_history';
+  const MAX_HISTORY = 30;
+  let isAnimating = false;
+  let currentHexagram = null;
+  let history = [];
+  let storageAvailable = false;
+  let resultReturnTo = 'landing';
+
+  const els = {
+    landing: document.getElementById('landing-view'),
+    contemplate: document.getElementById('contemplate-view'),
+    drawing: document.getElementById('drawing-view'),
+    result: document.getElementById('result-view'),
+    history: document.getElementById('history-view'),
+    webHeader: document.getElementById('webHeader'),
+    navHome: document.getElementById('navHome'),
+    navHistory: document.getElementById('navHistory'),
+    headerBrand: document.getElementById('headerBrand'),
+    btnStart: document.getElementById('btn-start'),
+    btnDraw: document.getElementById('btn-draw'),
+    btnAgain: document.getElementById('btn-again'),
+    btnHistoryResult: document.getElementById('btn-history-result'),
+    linkHistoryLanding: document.getElementById('link-history-landing'),
+    cardContainer: document.getElementById('card-container'),
+    cardInner: document.getElementById('card-inner'),
+    cardFront: document.getElementById('card-front'),
+    yaoDiagram: document.getElementById('yao-diagram'),
+    resultSymbol: document.getElementById('result-symbol'),
+    resultName: document.getElementById('result-name'),
+    resultFullname: document.getElementById('result-fullname'),
+    resultFortune: document.getElementById('result-fortune'),
+    resultHexagramText: document.getElementById('result-hexagram-text'),
+    resultTranslation: document.getElementById('result-translation'),
+    resultInterpretation: document.getElementById('result-interpretation'),
+    historyList: document.getElementById('history-list'),
+    historyEmpty: document.getElementById('history-empty'),
+    btnClearHistory: document.getElementById('btn-clear-history')
+  };
+
+  function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+  function checkStorage() {
+    try {
+      const test = '__iching_test__';
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
+      storageAvailable = true;
+    } catch (e) {
+      storageAvailable = false;
+      console.warn('localStorage 不可用，历史记录功能已禁用');
+      if (els.linkHistoryLanding) els.linkHistoryLanding.style.display = 'none';
+    }
+  }
+
+  function loadHistory() {
+    if (!storageAvailable) return;
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      history = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(history)) history = [];
+    } catch (e) { history = []; }
+  }
+
+  function saveHistory() {
+    if (!storageAvailable) return;
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {
+      if (e.name === 'QuotaExceededError' && history.length > 0) {
+        history.shift();
+        saveHistory();
+      }
+    }
+  }
+
+  function addHistory(hexagram) {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const record = {
+      id: Date.now() + '_' + Math.random().toString(36).slice(2, 9),
+      hexagramId: hexagram.id,
+      hexagramName: hexagram.name,
+      hexagramSymbol: hexagram.symbol,
+      hexagramFullName: hexagram.fullName,
+      hexagramText: hexagram.hexagramText,
+      timestamp: Date.now(),
+      dateStr: now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes())
+    };
+    history.unshift(record);
+    if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
+    saveHistory();
+  }
+
+  function formatDate(ts) {
+    const d = new Date(ts);
+    const pad = n => String(n).padStart(2, '0');
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function switchView(viewName, animate) {
+    const views = ['landing', 'contemplate', 'drawing', 'result', 'history'];
+    views.forEach(v => {
+      els[v].classList.remove('active', 'fade-in');
+    });
+    const target = els[viewName];
+    target.classList.add('active');
+
+    // Header visibility
+    if (viewName === 'landing') {
+      els.webHeader.classList.add('hidden');
+    } else {
+      els.webHeader.classList.remove('hidden');
+    }
+
+    // Nav active state
+    els.navHome.classList.remove('active');
+    els.navHistory.classList.remove('active');
+    if (viewName === 'landing') els.navHome.classList.add('active');
+    if (viewName === 'history') els.navHistory.classList.add('active');
+
+    // Particles
+    stopAllParticles();
+    if (viewName === 'landing') initParticles();
+    if (viewName === 'contemplate') startContemplateParticles();
+    if (viewName === 'drawing') startDrawingParticles();
+    if (viewName === 'result') startResultParticles();
+
+    window.scrollTo(0, 0);
+    if (animate) {
+      target.classList.remove('fade-in');
+      void target.offsetWidth;
+      target.classList.add('fade-in');
+    }
+  }
+
+  function getRandomHexagram() {
+    return HEXAGRAMS[Math.floor(Math.random() * HEXAGRAMS.length)];
+  }
+
+  function renderYaoDiagram(lines) {
+    const container = els.yaoDiagram;
+    container.innerHTML = '';
+    lines.forEach((line, idx) => {
+      const yaoEl = document.createElement('div');
+      yaoEl.className = 'yao-line ' + (line ? 'yang' : 'yin');
+      yaoEl.style.animation = 'resultSlideUp 0.4s ease-out ' + (0.3 + idx * 0.06) + 's both';
+      if (line) {
+        yaoEl.innerHTML = '<span></span>';
+      } else {
+        yaoEl.innerHTML = '<span></span><span></span>';
+      }
+      container.appendChild(yaoEl);
+    });
+  }
+
+  function renderCardFront(hexagram) {
+    els.cardFront.innerHTML = '<div class="card-front-border"></div>' +
+      '<div style="text-align:center;padding-top:25%">' +
+      '<div style="font-size:4rem;margin-bottom:12px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.08))">' + hexagram.symbol + '</div>' +
+      '<div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:var(--ink-black);letter-spacing:0.12em">' + hexagram.name + '</div>' +
+      '<div class="card-front-fullname">' + hexagram.fullName + '</div>' +
+      '<div class="ornament-line" style="margin:16px auto"></div>' +
+      '<div class="card-front-text">' + hexagram.hexagramText + '</div>' +
+      '</div>';
+  }
+
+  const FORTUNE_CLASS = {
+    '上上卦': 'fortune-best',
+    '上中卦': 'fortune-good',
+    '中上卦': 'fortune-fair',
+    '中中卦': 'fortune-neutral',
+    '中下卦': 'fortune-poor',
+    '下下卦': 'fortune-worst'
+  };
+
+  function renderResult(hexagram) {
+    currentHexagram = hexagram;
+    renderYaoDiagram(hexagram.lines);
+    els.resultSymbol.textContent = hexagram.symbol;
+    els.resultName.textContent = hexagram.name + '卦';
+    els.resultFullname.textContent = hexagram.fullName;
+    els.resultHexagramText.textContent = hexagram.hexagramText;
+    els.resultTranslation.textContent = hexagram.translation;
+    els.resultInterpretation.innerHTML = hexagram.interpretation;
+
+    const fortuneEl = els.resultFortune;
+    fortuneEl.textContent = hexagram.fortune;
+    fortuneEl.className = 'fortune-badge ' + (FORTUNE_CLASS[hexagram.fortune] || 'fortune-neutral');
+  }
+
+  function renderHistory() {
+    const list = els.historyList;
+    list.innerHTML = '';
+    if (history.length === 0) {
+      els.historyEmpty.style.display = 'block';
+      els.btnClearHistory.style.display = 'none';
+      return;
+    }
+    els.historyEmpty.style.display = 'none';
+    els.btnClearHistory.style.display = 'block';
+    history.forEach((record, idx) => {
+      const card = document.createElement('div');
+      card.className = 'history-card';
+      card.style.animation = 'resultSlideUp 0.4s ease-out ' + (idx * 0.05) + 's both';
+      card.innerHTML =
+        '<div class="history-card-symbol">' + record.hexagramSymbol + '</div>' +
+        '<div class="history-card-info">' +
+          '<div class="history-card-name">' + record.hexagramName + '卦 · ' + (record.hexagramFullName || '') + '</div>' +
+          '<div class="history-card-text">' + record.hexagramText + '</div>' +
+        '</div>' +
+        '<div class="history-card-date">' + (record.dateStr || formatDate(record.timestamp)) + '</div>';
+      card.addEventListener('click', () => {
+        const hex = HEXAGRAMS.find(h => h.id === record.hexagramId);
+        if (hex) {
+          resultReturnTo = 'history';
+          renderResult(hex);
+          switchView('result', true);
+        }
+      });
+      list.appendChild(card);
+    });
+  }
+
+  async function drawCard() {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    const hexagram = getRandomHexagram();
+
+    // 1. Contemplate fade out
+    els.contemplate.classList.add('fade-out');
+    await delay(300);
+    els.contemplate.classList.remove('active', 'fade-out');
+
+    // 2. Show drawing view and card appear
+    switchView('drawing', false);
+    els.cardContainer.classList.remove('appear');
+    els.cardContainer.style.opacity = '0';
+    els.cardContainer.style.transform = 'scale(0.8)';
+    els.cardInner.classList.remove('flipped');
+    renderCardFront(hexagram);
+    await delay(50);
+    void els.cardContainer.offsetWidth;
+    els.cardContainer.classList.add('appear');
+    await delay(500);
+
+    // 3. Suspense pause
+    await delay(400);
+
+    // 4. Flip card
+    els.cardInner.classList.add('flipped');
+
+    // Particle burst on flip
+    if (drawingPS) {
+      const rect = els.cardContainer.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const canvasRect = document.getElementById('drawing-canvas').getBoundingClientRect();
+      drawingPS.burst(cx - canvasRect.left, cy - canvasRect.top, 40);
+    }
+
+    await delay(900);
+
+    // 5. Show result
+    resultReturnTo = 'landing';
+    renderResult(hexagram);
+    addHistory(hexagram);
+    els.drawing.classList.remove('active');
+    switchView('result', true);
+
+    isAnimating = false;
+  }
+
+  function bindEvents() {
+    els.btnStart.addEventListener('click', () => switchView('contemplate', true));
+    els.btnDraw.addEventListener('click', drawCard);
+    els.btnAgain.addEventListener('click', () => switchView('contemplate', true));
+
+    const showHistory = () => {
+      renderHistory();
+      switchView('history', true);
+    };
+    els.btnHistoryResult.addEventListener('click', showHistory);
+    els.linkHistoryLanding.addEventListener('click', showHistory);
+    els.navHistory.addEventListener('click', showHistory);
+
+    els.headerBrand.addEventListener('click', () => switchView('landing', true));
+    els.navHome.addEventListener('click', () => switchView('landing', true));
+
+    els.btnClearHistory.addEventListener('click', () => {
+      if (history.length === 0) return;
+      if (confirm('确定清除所有问卦记录吗？')) {
+        history = [];
+        saveHistory();
+        renderHistory();
+      }
+    });
+  }
+
+  function init() {
+    checkStorage();
+    loadHistory();
+    setupBaguaRing();
+    setupTaijiOrbit();
+    initParticles();
+    bindEvents();
+
+    // Landing entrance animation
+    const landingContent = document.getElementById('landingContent');
+    if (landingContent) {
+      landingContent.style.opacity = '0';
+      landingContent.style.transform = 'translateY(30px)';
+      landingContent.style.transition = 'opacity 1s ease, transform 1s cubic-bezier(0.34,1.56,0.64,1)';
+      setTimeout(() => {
+        landingContent.style.opacity = '1';
+        landingContent.style.transform = 'translateY(0)';
+      }, 300);
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
